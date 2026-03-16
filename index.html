@@ -1,0 +1,3527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeorgeSt.ai — Charleston County Permit Intelligence</title>
+<meta name="description" content="The first AI pre-flight tool for Charleston County permitting. Run a full compliance check across design review, zoning, building code, flood, and tax credits before you submit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Charleston palette — warm cream + deep green */
+  --cream: #F5EFE0;
+  --cream-dark: #EDE5D2;
+  --cream-darker: #E2D8C4;
+  --parchment: #F9F4E8;
+  --white: #FEFCF7;
+  --green-deep: #2D4A3E;
+  --green-mid: #3D6355;
+  --green-light: #5A8A78;
+  --green-pale: #8FB5A6;
+  --green-wash: rgba(45,74,62,0.04);
+  --green-wash2: rgba(45,74,62,0.08);
+  --gold: #B8963E;
+  --gold-light: #C8A96E;
+  --gold-wash: rgba(184,150,62,0.08);
+  --text-dark: #2A2A25;
+  --text-body: #4A4A42;
+  --text-secondary: #6B6B60;
+  --text-muted: #9A9A8C;
+  --text-faint: #B8B8A8;
+  --border: #D8D0BE;
+  --border-light: #E5DDCC;
+  --border-dark: #C4BAA4;
+  --red: #B83A3A;
+  --red-bg: rgba(184,58,58,0.06);
+  --red-border: rgba(184,58,58,0.2);
+  --yellow-dark: #8B7020;
+  --yellow-bg: rgba(184,150,62,0.08);
+  --yellow-border: rgba(184,150,62,0.25);
+  --green-flag: #2D6B4A;
+  --green-flag-bg: rgba(45,107,74,0.06);
+  --green-flag-border: rgba(45,107,74,0.2);
+  --blue: #2D5A8A;
+  --blue-bg: rgba(45,90,138,0.05);
+
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --sans: 'Source Sans 3', -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', 'Menlo', monospace;
+
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Subtle paper texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.018'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+::selection { background: var(--green-deep); color: var(--cream); }
+
+.wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== NAVIGATION ===== */
+.nav {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  text-decoration: none;
+}
+
+.nav-logo-mark {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--green-deep);
+  letter-spacing: -0.3px;
+}
+
+.nav-logo-ext {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 400;
+}
+
+.nav-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.nav-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green-deep);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ===== HERO ===== */
+.hero {
+  padding: 48px 0 40px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--green-deep);
+  margin-bottom: 16px;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-desc {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 620px;
+  font-weight: 300;
+}
+
+.hero-desc strong {
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+/* Ornamental divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 0;
+  color: var(--text-faint);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ===== FORM ===== */
+.form-section { padding: 8px 0 40px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.fg { display: flex; flex-direction: column; gap: 6px; }
+.fg.full { grid-column: 1 / -1; }
+
+.fl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.fi, .fs, .ft {
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dark);
+  font-size: 14px;
+  font-family: var(--sans);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fi:focus, .fs:focus, .ft:focus {
+  border-color: var(--green-deep);
+  box-shadow: 0 0 0 3px var(--green-wash);
+}
+
+.fi::placeholder, .ft::placeholder { color: var(--text-faint); }
+.fs { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A9A8C'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.fs option { background: var(--white); }
+.ft { min-height: 150px; resize: vertical; line-height: 1.65; }
+
+/* Upload Zone */
+.upload-zone {
+  border: 1.5px dashed var(--border-dark);
+  border-radius: var(--radius-lg);
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  background: var(--white);
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--green-deep);
+  background: var(--green-wash);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  display: block;
+  filter: grayscale(30%);
+}
+
+.upload-title {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--green-deep);
+  margin-bottom: 6px;
+}
+
+.upload-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.upload-formats {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 10px;
+  font-family: var(--mono);
+}
+
+/* File previews */
+.file-previews { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+.file-thumb {
+  position: relative;
+  width: 72px; height: 72px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--cream-dark);
+}
+
+.file-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.file-thumb .pdf-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+  font-size: 10px; color: var(--text-muted);
+  font-family: var(--mono); font-weight: 500;
+  flex-direction: column; gap: 3px;
+}
+
+.file-thumb .pdf-icon span { font-size: 20px; }
+
+.file-thumb .rm {
+  position: absolute; top: 3px; right: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--green-deep); color: var(--cream);
+  font-size: 10px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; transition: opacity 0.15s;
+  border: none;
+}
+
+.file-thumb:hover .rm { opacity: 1; }
+
+/* Materials chips */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+
+.chip {
+  padding: 7px 13px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  font-weight: 400;
+}
+
+.chip:hover { border-color: var(--border-dark); color: var(--text-dark); }
+
+.chip.sel {
+  background: var(--green-deep);
+  border-color: var(--green-deep);
+  color: var(--cream);
+}
+
+/* Submit */
+.submit-row {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-go {
+  padding: 14px 32px;
+  background: var(--green-deep);
+  color: var(--cream);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--sans);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.2px;
+}
+
+.btn-go:hover:not(:disabled) {
+  background: var(--green-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(45,74,62,0.2);
+}
+
+.btn-go:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.submit-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ===== LOADING ===== */
+.loading { padding: 60px 0; text-align: center; display: none; }
+.loading.on { display: block; }
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--green-deep);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 18px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.load-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--green-deep);
+  margin-bottom: 6px;
+}
+
+.load-sub { font-size: 14px; color: var(--text-muted); }
+
+.load-steps {
+  display: flex; flex-direction: column; gap: 6px;
+  max-width: 400px; margin: 24px auto 0; text-align: left;
+}
+
+.load-step {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 12px; color: var(--text-muted);
+  font-family: var(--mono);
+  opacity: 0; animation: fadeIn 0.3s ease forwards;
+}
+
+.load-step.done { color: var(--green-deep); }
+.load-step .si { width: 16px; text-align: center; }
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* ===== REPORT ===== */
+.report { display: none; padding: 36px 0 56px; }
+.report.on { display: block; }
+
+.rpt-hdr {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding-bottom: 24px; border-bottom: 1px solid var(--border);
+  margin-bottom: 28px; gap: 20px;
+}
+
+.rpt-title {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--green-deep);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.rpt-sub { font-size: 13px; color: var(--text-muted); }
+
+.conf-block { text-align: right; flex-shrink: 0; }
+
+.conf-score {
+  font-family: var(--serif);
+  font-size: 52px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.conf-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.rpt-summary {
+  font-size: 16px;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 6px;
+}
+
+.rpt-summary strong { color: var(--text-dark); }
+
+.rpt-board {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  line-height: 1.6;
+  padding: 12px 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Flag cards */
+.flag-sec { margin-bottom: 32px; }
+
+.flag-sec-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fc {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  margin-bottom: 12px;
+  border-left: 4px solid;
+  border-top: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  transition: transform 0.1s;
+}
+
+.fc:hover { transform: translateX(2px); }
+
+.fc.red { border-left-color: var(--red); background: var(--red-bg); }
+.fc.yellow { border-left-color: var(--gold); background: var(--yellow-bg); }
+.fc.green { border-left-color: var(--green-flag); background: var(--green-flag-bg); }
+.fc.blue { border-left-color: var(--blue); background: var(--blue-bg); }
+
+.fc-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+
+.fc-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+
+.fc.red .fc-badge { background: var(--red-border); color: var(--red); }
+.fc.yellow .fc-badge { background: var(--yellow-border); color: var(--yellow-dark); }
+.fc.green .fc-badge { background: var(--green-flag-border); color: var(--green-flag); }
+.fc.blue .fc-badge { background: rgba(45,90,138,0.12); color: var(--blue); }
+
+.fc-title { font-size: 15px; font-weight: 600; }
+.fc.red .fc-title { color: var(--red); }
+.fc.yellow .fc-title { color: var(--yellow-dark); }
+.fc.green .fc-title { color: var(--green-flag); }
+.fc.blue .fc-title { color: var(--blue); }
+
+.fc-body {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.prec {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.prec .src { color: var(--green-deep); font-weight: 600; }
+.prec .dec { font-weight: 600; }
+.prec .dec.app { color: var(--green-flag); }
+.prec .dec.den { color: var(--red); }
+.prec .dec.def { color: var(--gold); }
+.prec .fix {
+  color: var(--green-deep);
+  font-weight: 600;
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Recommendations */
+.recs {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-top: 32px;
+}
+
+.recs-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--green-deep);
+  margin-bottom: 16px;
+}
+
+.rec {
+  padding: 12px 0;
+  border-top: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.rec:first-child { border-top: none; }
+.rec strong { color: var(--text-dark); font-weight: 600; }
+
+.btn-new {
+  margin-top: 28px;
+  padding: 12px 24px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-family: var(--sans);
+  font-weight: 500;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-new:hover {
+  border-color: var(--green-deep);
+  color: var(--green-deep);
+  background: var(--green-wash);
+}
+
+.disclaimer {
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ===== DECISIONS FEED ===== */
+.section-hdr {
+  padding: 40px 0 24px;
+  border-top: 1px solid var(--border);
+}
+.section-hdr-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.section-hdr h2 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--green-deep);
+  letter-spacing: -0.3px;
+}
+.section-hdr p {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.section-updated {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.5px;
+}
+
+.decisions-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.df-btn {
+  padding: 6px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--sans);
+  letter-spacing: 0.3px;
+}
+.df-btn:hover { border-color: var(--green-deep); color: var(--green-deep); }
+.df-btn.active { background: var(--green-deep); border-color: var(--green-deep); color: var(--cream); }
+
+.decisions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.decision-card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  border-left: 4px solid var(--border);
+  transition: transform 0.1s;
+}
+.decision-card:hover { transform: translateY(-1px); }
+.decision-card.approved { border-left-color: var(--green-flag); background: var(--green-flag-bg); }
+.decision-card.denied { border-left-color: var(--red); background: var(--red-bg); }
+.decision-card.deferred { border-left-color: var(--gold); background: var(--yellow-bg); }
+
+.dc-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.dc-board {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.dc-date {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-faint);
+}
+.dc-address {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--green-deep);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.dc-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+.dc-outcome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dc-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+.decision-card.approved .dc-badge { background: var(--green-flag-border); color: var(--green-flag); }
+.decision-card.denied .dc-badge { background: var(--red-border); color: var(--red); }
+.decision-card.deferred .dc-badge { background: var(--yellow-border); color: var(--yellow-dark); }
+.dc-vote {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+.dc-takeaway {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ===== FEE ESTIMATOR ===== */
+.fee-section {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+}
+
+.fee-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.fee-inputs { display: flex; flex-direction: column; gap: 16px; }
+
+.fee-result-box {
+  background: var(--green-deep);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fee-result-title {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--green-pale);
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.fee-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.fee-line:last-of-type { border-bottom: none; }
+.fee-line-label { font-size: 12px; color: var(--green-pale); }
+.fee-line-amt {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cream);
+}
+.fee-line-amt.na { color: var(--text-muted); font-size: 11px; }
+
+.fee-total-line {
+  border-top: 1px solid var(--gold);
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.fee-total-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold-light);
+  font-weight: 600;
+  font-family: var(--mono);
+}
+.fee-total-amt {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--cream);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.fee-note {
+  font-size: 10.5px;
+  color: rgba(143,181,166,0.7);
+  line-height: 1.55;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .decisions-grid { grid-template-columns: 1fr; }
+  .fee-grid { grid-template-columns: 1fr; }
+  .nav a[href="#decisions"], .nav a[href="#fees"] { display: none; }
+}
+
+/* ===== FOOTER ===== */
+footer {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.footer-mark {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--green-deep);
+  margin-bottom: 6px;
+}
+
+.footer-mark span { color: var(--gold); }
+
+.footer-tagline {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.footer-legal {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 640px) {
+  .wrap { padding: 0 18px; }
+  .form-grid { grid-template-columns: 1fr; gap: 12px; }
+  .rpt-hdr { flex-direction: column; }
+  .conf-block { text-align: left; }
+  .hero { padding: 32px 0 28px; }
+  .hero h1 { font-size: 28px; }
+  .hero-desc { font-size: 14px; }
+  .submit-row { flex-direction: column; align-items: stretch; }
+  .btn-go { justify-content: center; width: 100%; }
+  .submit-note { text-align: center; }
+  .chip { font-size: 11px; padding: 6px 10px; }
+  .upload-zone { padding: 28px 16px; }
+  .fc { padding: 18px 16px; }
+  .prec { font-size: 11px; padding: 12px; }
+  .recs { padding: 20px 18px; }
+  .nav-badge { display: none; }
+}
+
+@media (max-width: 400px) {
+  .hero h1 { font-size: 24px; }
+  .conf-score { font-size: 42px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="#" class="nav-logo">
+    <span class="nav-logo-mark">GeorgeSt</span>
+    <span class="nav-logo-ext">.ai</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:18px;">
+    <a href="#decisions" style="font-size:12px;font-weight:600;color:var(--text-muted);text-decoration:none;letter-spacing:0.3px;" onmouseover="this.style.color='var(--green-deep)'" onmouseout="this.style.color='var(--text-muted)'">Monthly Brief</a>
+    <a href="#fees" style="font-size:12px;font-weight:600;color:var(--text-muted);text-decoration:none;letter-spacing:0.3px;" onmouseover="this.style.color='var(--green-deep)'" onmouseout="this.style.color='var(--text-muted)'">Fee Estimator</a>
+    <div class="nav-badge">
+      <span class="nav-dot"></span>
+      Full Permit Pre-Flight
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Charleston County Permit Intelligence</div>
+  <h1>Know where you stand <em>before you submit.</em></h1>
+  <p class="hero-desc">Describe your project. Upload plans, elevations, or renders. GeorgeSt runs a full pre-flight across <strong>every review your project will face</strong> — design review, zoning compliance, building &amp; safety, stormwater/DHEC, and tax credit eligibility — and returns one consolidated report with a confidence score, sourced flags, and a prioritized fix list.</p>
+</div>
+
+<!-- Form -->
+<div class="form-section" id="formSection">
+  <div class="divider">Project Details</div>
+  <div class="form-grid">
+    <div class="fg">
+      <label class="fl">Project Address</label>
+      <input class="fi" id="fAddr" placeholder="e.g. 411 Meeting Street" />
+    </div>
+    <div class="fg">
+      <label class="fl">Jurisdiction</label>
+      <select class="fs" id="fJuris" onchange="onJurisdictionChange()">
+        <option value="">Select municipality</option>
+        <optgroup label="Charleston County">
+          <option value="city_of_charleston">City of Charleston</option>
+          <option value="mount_pleasant">Mount Pleasant</option>
+          <option value="north_charleston">North Charleston</option>
+          <option value="sullivans_island">Sullivan's Island</option>
+          <option value="isle_of_palms">Isle of Palms</option>
+          <option value="folly_beach">Folly Beach</option>
+          <option value="james_island">Town of James Island</option>
+          <option value="kiawah">Kiawah Island</option>
+          <option value="summerville">Summerville</option>
+          <option value="goose_creek">Goose Creek</option>
+          <option value="hanahan">Hanahan</option>
+          <option value="unincorporated_cc">Unincorporated Charleston County</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Neighborhood <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-faint);">(City of Charleston only)</span></label>
+      <select class="fs" id="fHood">
+        <option value="">Select area</option>
+        <option>French Quarter</option><option>Harleston Village</option>
+        <option>South of Broad</option><option>Ansonborough</option>
+        <option>Cannonborough / Elliottborough</option><option>Radcliffeborough</option>
+        <option>Mazyck-Wraggsborough</option><option>East Side</option>
+        <option>Westside</option><option>Wagener Terrace</option>
+        <option>Hampton Park Terrace</option><option>North Central</option>
+        <option>Upper Peninsula / Morrison Dr</option>
+        <option>West Ashley</option><option>James Island</option>
+        <option>Johns Island</option><option>Daniel Island</option>
+        <option>Not sure</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Project Type</label>
+      <select class="fs" id="fType">
+        <option value="">What are you building?</option>
+        <optgroup label="Commercial / Hospitality">
+          <option>Hotel / Accommodations</option>
+          <option>Mixed-Use Development</option>
+          <option>Restaurant / Bar / Event Space</option>
+          <option>Retail / Storefront Renovation</option>
+          <option>Office / Commercial</option>
+          <option>Institutional (Hospital, University, Church)</option>
+        </optgroup>
+        <optgroup label="Residential">
+          <option>New Single-Family Residence</option>
+          <option>Multi-Family (8+ units)</option>
+          <option>Addition or Renovation</option>
+          <option>ADU / Accessory Dwelling</option>
+        </optgroup>
+        <optgroup label="Site / Exterior">
+          <option>Full or Partial Demolition</option>
+          <option>Signage Package</option>
+          <option>Material Replacement (roof, windows, siding)</option>
+          <option>Hardscape / Landscape / Site Work</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="fg" id="fCatGroup">
+      <label class="fl">Building Category <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-faint);">(historic jurisdictions only)</span></label>
+      <select class="fs" id="fCat">
+        <option value="">Not sure</option>
+        <option>Category 1 — Landmark</option>
+        <option>Category 2 — Individually significant</option>
+        <option>Category 3 — Contributing</option>
+        <option>Category 4 — Contextual</option>
+        <option>Not Rated</option>
+        <option>New Construction</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Estimated Construction Value</label>
+      <input class="fi" id="fVal" placeholder="e.g. $4.2M" />
+    </div>
+    <div class="fg" id="fPhaseGroup">
+      <label class="fl">Review Phase <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-faint);">(if applicable)</span></label>
+      <select class="fs" id="fPhase">
+        <option value="">Not sure</option>
+        <option>Conceptual (height, scale, mass)</option>
+        <option>Preliminary (details & materials)</option>
+        <option>Final (construction docs / mock-up)</option>
+        <option>Staff-Level Review</option>
+        <option>Appeal of Staff Decision</option>
+      </select>
+    </div>
+
+    <!-- Upload -->
+    <div class="fg full">
+      <div class="divider">Plans & Drawings</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.webp" />
+        <span class="upload-icon">📐</span>
+        <div class="upload-title">Drop files here or click to browse</div>
+        <div class="upload-desc">Site plans, elevations, streetscapes, material boards, renders, mock-up photos, or submittal packages</div>
+        <div class="upload-formats">PDF · PNG · JPG · WEBP — up to 20MB per file</div>
+      </div>
+      <div class="file-previews" id="filePreviews"></div>
+    </div>
+
+    <!-- Description -->
+    <div class="fg full">
+      <div class="divider">Scope of Work</div>
+      <textarea class="ft" id="fDesc" placeholder="Walk us through the project like you'd brief your team before a submittal.
+
+What's on the site now? What are you proposing? Height, scale, massing? Materials? Any concerns about neighborhood context, setbacks, parking? If you've had a pre-application meeting or received staff comments, include those details.
+
+The more you tell us, the sharper the analysis."></textarea>
+    </div>
+
+    <!-- Materials -->
+    <div class="fg full">
+      <label class="fl">Proposed Exterior Materials</label>
+      <div class="chip-grid" id="chips">
+        <span class="chip" data-m="Brick">Brick</span>
+        <span class="chip" data-m="Stucco">Stucco</span>
+        <span class="chip" data-m="Wood siding">Wood Siding</span>
+        <span class="chip" data-m="Fiber cement (HardiePlank)">Fiber Cement</span>
+        <span class="chip" data-m="Cementitious panels">Cementitious Panels</span>
+        <span class="chip" data-m="Vinyl windows">Vinyl Windows</span>
+        <span class="chip" data-m="Aluminum-clad SDL windows">Alum-Clad Windows</span>
+        <span class="chip" data-m="Fiberglass windows">Fiberglass Windows</span>
+        <span class="chip" data-m="Metal storefront system">Metal Storefront</span>
+        <span class="chip" data-m="Wood storefront">Wood Storefront</span>
+        <span class="chip" data-m="Standing seam (hand-crimped)">Standing Seam (Trad.)</span>
+        <span class="chip" data-m="Standing seam (engineered)">Standing Seam (Eng.)</span>
+        <span class="chip" data-m="Copper roof">Copper Roof</span>
+        <span class="chip" data-m="Slate roof">Slate</span>
+        <span class="chip" data-m="Composite decking">Composite Decking</span>
+        <span class="chip" data-m="Traditional shutters">Trad. Shutters</span>
+        <span class="chip" data-m="Bifold shutters">Bifold Shutters</span>
+        <span class="chip" data-m="Vinyl siding">Vinyl Siding</span>
+        <span class="chip" data-m="EIFS">EIFS</span>
+        <span class="chip" data-m="Corrugated metal">Corrugated Metal</span>
+        <span class="chip" data-m="Glass curtain wall">Glass Curtain Wall</span>
+        <span class="chip" data-m="GFRC panels">GFRC Panels</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="submit-row">
+    <button class="btn-go" id="goBtn" onclick="runAnalysis()">Run Full Pre-Flight →</button>
+    <span class="submit-note">5 review layers. Every flag sourced. 60–90 seconds.</span>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading" id="loadBox">
+  <div class="spinner"></div>
+  <div class="load-title">Analyzing your submittal...</div>
+  <div class="load-sub">Running full permit pre-flight across all 5 review layers</div>
+  <div class="load-steps" id="loadSteps"></div>
+</div>
+
+<!-- Report -->
+<div class="report" id="rptBox">
+  <div id="rptContent"></div>
+  <button class="btn-new" onclick="reset()">← Run Another Analysis</button>
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> GeorgeSt.ai analysis draws on publicly available board meeting records, municipal zoning ordinances, design review guidelines, Secretary of Interior Standards, IBC/IRC 2021 as adopted by SC, FEMA flood maps, DHEC regulations, and SC historic tax credit statutes. Sources vary by jurisdiction. This does not constitute legal, architectural, planning, or engineering advice. Boards are subjective. Code interpretations vary. Tax credit eligibility requires formal certification. Consult a licensed architect, preservation consultant, or attorney before formal submittal.
+  </div>
+</div>
+
+<!-- RECENT DECISIONS FEED -->
+<div id="decisions" class="section-hdr">
+  <div class="section-hdr-top">
+    <h2 id="decisionsTitle">Board & Staff Decision Brief</h2>
+    <span class="section-updated">Last updated: March 2026</span>
+  </div>
+  <p>Decisions summarized from official meeting records — the patterns that matter, without reading 40-page PDFs. <a id="decisionsSourceLink" href="https://www.charleston-sc.gov/AgendaCenter/Board-of-Architectural-Review-1/" target="_blank" style="color:var(--green-deep);font-weight:600;">Source →</a></p>
+</div>
+
+<div class="decisions-filter" id="decisionsFilterBar"></div>
+
+<div class="decisions-grid" id="decisionsGrid"></div>
+
+<!-- PERMIT FEE ESTIMATOR -->
+<div id="fees" class="fee-section">
+  <div class="section-hdr-top" style="padding-top:0;border-top:none;">
+    <h2>Permit Fee Estimator</h2>
+    <span class="section-updated" id="feeSourceDate">Select a jurisdiction above to see fee sources</span>
+  </div>
+  <p id="feeSourceDesc" style="font-size:13px;color:var(--text-muted);font-style:italic;margin-top:6px;">Fee estimates are sourced from official municipal fee schedules. Select a jurisdiction to see applicable sources.</p>
+
+  <div class="fee-grid">
+    <div class="fee-inputs">
+      <div class="fg">
+        <label class="fl">Project Type</label>
+        <select class="fs" id="feeType" onchange="calcFees()">
+          <option value="">Select project type</option>
+          <option value="new_commercial">New Commercial Construction</option>
+          <option value="new_residential">New Residential Construction</option>
+          <option value="commercial_reno">Commercial Renovation / Fit-Out</option>
+          <option value="residential_reno">Residential Renovation / Addition</option>
+          <option value="hotel">Hotel / Accommodations</option>
+          <option value="mixed_use">Mixed-Use Development</option>
+          <option value="demo">Demolition</option>
+          <option value="signage">Signage Only</option>
+          <option value="adu">ADU / Accessory Dwelling</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Construction Value (estimated)</label>
+        <input class="fi" id="feeVal" type="number" placeholder="e.g. 2500000" oninput="calcFees()" />
+      </div>
+      <div class="fg">
+        <label class="fl">Gross Square Footage</label>
+        <input class="fi" id="feeSqft" type="number" placeholder="e.g. 8500" oninput="calcFees()" />
+      </div>
+      <div class="fg">
+        <label class="fl">Review Boards / Additional Permits</label>
+        <div class="chip-grid" style="margin-top:2px;">
+          <span class="chip" data-fee="bar" onclick="this.classList.toggle('sel');calcFees()">Design Review Board</span>
+          <span class="chip" data-fee="drb" onclick="this.classList.toggle('sel');calcFees()">Secondary Board</span>
+          <span class="chip" data-fee="bza" onclick="this.classList.toggle('sel');calcFees()">BZA / Variance</span>
+          <span class="chip" data-fee="demo" onclick="this.classList.toggle('sel');calcFees()">Demo Permit</span>
+          <span class="chip" data-fee="landmark" onclick="this.classList.toggle('sel');calcFees()">Historic / Landmark</span>
+          <span class="chip" data-fee="bailey" onclick="this.classList.toggle('sel');calcFees()">Bailey Bill Filing</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="fee-result-box" id="feeResultBox">
+      <div>
+        <div class="fee-result-title">Estimated Permit Fees</div>
+      </div>
+      <div id="feeLines">
+        <div style="color:var(--green-pale);font-size:13px;font-style:italic;text-align:center;padding:20px 0;">Enter project details to estimate fees</div>
+      </div>
+      <div class="fee-note" id="feeNote" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-mark">GeorgeSt<span>.ai</span></div>
+  <div class="footer-tagline">Design Review · Zoning · Building & Safety · Stormwater · Tax Credits</div>
+  <div class="footer-legal">Named for the Permit Center at 2 George Street · Charleston County, SC · 2026</div>
+</footer>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// GEORGEST.AI — MODULAR PERMIT PRE-FLIGHT ENGINE v2
+// Architecture: ENGINE_PROMPT + STATE_MODULE + JURISDICTION_MODULE
+// Adding a new jurisdiction = adding a new entry to JURISDICTIONS. No code changes.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── UI: CHIPS ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('sel')));
+function getMats(){return Array.from(document.querySelectorAll('.chip.sel')).map(c=>c.dataset.m)}
+
+// ─── UI: FILE UPLOAD ─────────────────────────────────────────────────────────
+let uploadedFiles=[];
+const uploadZone=document.getElementById('uploadZone');
+const fileInput=document.getElementById('fileInput');
+const previews=document.getElementById('filePreviews');
+['dragenter','dragover'].forEach(e=>uploadZone.addEventListener(e,ev=>{ev.preventDefault();uploadZone.classList.add('dragover')}));
+['dragleave','drop'].forEach(e=>uploadZone.addEventListener(e,ev=>{ev.preventDefault();uploadZone.classList.remove('dragover')}));
+uploadZone.addEventListener('drop',ev=>handleFiles(ev.dataTransfer.files));
+fileInput.addEventListener('change',ev=>handleFiles(ev.target.files));
+
+function handleFiles(files){
+  Array.from(files).forEach(file=>{
+    if(uploadedFiles.length>=8)return;
+    if(file.size>20*1024*1024){alert('File too large: '+file.name);return}
+    const reader=new FileReader();
+    reader.onload=e=>{uploadedFiles.push({name:file.name,type:file.type,data:e.target.result});renderPreviews()};
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPreviews(){
+  previews.innerHTML='';
+  uploadedFiles.forEach((f,i)=>{
+    const div=document.createElement('div');div.className='file-thumb';
+    if(f.type==='application/pdf'){div.innerHTML=`<div class="pdf-icon"><span>📄</span>${f.name.slice(0,8)}</div>`}
+    else{div.innerHTML=`<img src="${f.data}" alt="${f.name}">`}
+    div.innerHTML+=`<button class="rm" onclick="removeFile(${i})">✕</button>`;
+    previews.appendChild(div);
+  });
+}
+function removeFile(i){uploadedFiles.splice(i,1);renderPreviews()}
+
+// ─── UI: JURISDICTION CHANGE ─────────────────────────────────────────────────
+function onJurisdictionChange(){
+  const jId=document.getElementById('fJuris').value;
+  const hoodField=document.getElementById('fHood').closest('.fg');
+  const catGroup=document.getElementById('fCatGroup');
+  const phaseGroup=document.getElementById('fPhaseGroup');
+
+  // Show neighborhood only for City of Charleston
+  if(jId==='city_of_charleston'){
+    hoodField.style.display='';
+  } else {
+    hoodField.style.display='none';
+    document.getElementById('fHood').value='';
+  }
+
+  // Show Building Category only for jurisdictions with historic categorization
+  const hasHistoricCats = ['city_of_charleston','sullivans_island'].includes(jId);
+  if(catGroup) catGroup.style.display = hasHistoricCats ? '' : 'none';
+  if(!hasHistoricCats) document.getElementById('fCat').value='';
+
+  // Show Review Phase only for jurisdictions with phased board review
+  const hasPhasedReview = ['city_of_charleston','mount_pleasant','sullivans_island','kiawah'].includes(jId);
+  if(phaseGroup) phaseGroup.style.display = hasPhasedReview ? '' : 'none';
+  if(!hasPhasedReview) document.getElementById('fPhase').value='';
+
+  // Update decisions feed and fee estimator
+  if(jId && JURISDICTIONS[jId]){
+    activeJurisForFeed = jId;
+    activeFilter='all';
+
+    const juris = JURISDICTIONS[jId];
+
+    // Update decisions heading
+    const titleEl = document.getElementById('decisionsTitle');
+    if(titleEl){
+      const boardNames = (juris.boardFilters||[]).filter(f=>!['all','approved','denied','deferred'].includes(f.value)).map(f=>f.label).join(' / ');
+      titleEl.textContent = (boardNames || 'Planning') + ' Decision Brief';
+    }
+
+    // Update decisions source link
+    const srcLink = document.getElementById('decisionsSourceLink');
+    if(srcLink && juris.decisionsSource){
+      srcLink.textContent = 'Source: ' + juris.decisionsSource.label + ' →';
+      srcLink.href = juris.decisionsSource.url;
+    }
+
+    // Dynamically render filter buttons from jurisdiction data
+    renderFilterButtons(juris);
+
+    // Update fee estimator source info
+    const feeDateEl = document.getElementById('feeSourceDate');
+    const feeDescEl = document.getElementById('feeSourceDesc');
+    if(feeDateEl) feeDateEl.textContent = 'Sources: ' + juris.name;
+    if(feeDescEl && juris.feeSources){
+      feeDescEl.innerHTML = juris.feeSources.map(s =>
+        `<a href="${s.url}" target="_blank" style="color:var(--green-deep);">${s.label}</a>`
+      ).join(' · ') + '. Not a substitute for official fee calculation — verify with ' + juris.name + '.';
+    }
+
+    renderDecisions();
+    calcFees();
+  }
+}
+
+// Dynamically render filter buttons from jurisdiction's boardFilters array
+function renderFilterButtons(juris){
+  const bar = document.getElementById('decisionsFilterBar');
+  if(!bar || !juris.boardFilters) return;
+  bar.innerHTML = juris.boardFilters.map((f,i) =>
+    `<button class="df-btn${i===0?' active':''}" onclick="filterDecisions('${f.value}',this)">${f.label}</button>`
+  ).join('');
+}
+
+// Initialize: hide jurisdiction-specific fields on page load (called after JURISDICTIONS loaded)
+function initForm(){
+  const hoodField=document.getElementById('fHood')?.closest('.fg');
+  const catGroup=document.getElementById('fCatGroup');
+  const phaseGroup=document.getElementById('fPhaseGroup');
+  if(hoodField) hoodField.style.display='none';
+  if(catGroup) catGroup.style.display='none';
+  if(phaseGroup) phaseGroup.style.display='none';
+  // Render default (Charleston) filter buttons and decisions
+  const defaultJuris = JURISDICTIONS['city_of_charleston'];
+  if(defaultJuris) renderFilterButtons(defaultJuris);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENGINE PROMPT — Generic, jurisdiction-agnostic. Never changes.
+// ═══════════════════════════════════════════════════════════════════════════════
+const ENGINE_PROMPT=`You are GeorgeSt.ai, a full-stack permit pre-flight intelligence engine. You analyze projects across FIVE review layers simultaneously: (1) Design review (architectural board review), (2) Zoning compliance, (3) Building & Safety (IBC/IRC), (4) Stormwater/DHEC/flood, and (5) Tax credit eligibility. You return ONE consolidated report with a single overall confidence score.
+
+## YOUR VOICE
+Write like a senior development consultant who has navigated 200+ permit cycles. You speak the language of real estate — carry costs, entitlements, review cycles, setbacks, FAR, egress, flood elevation, tax credit stacking. You are blunt, specific, and never waste time. When something will fail, say so plainly and say how to fix it. When something is strong, say so. Do NOT sound like a chatbot.
+
+## HONESTY MANDATE
+Never sugarcoat. Never be 100% certain — design review boards are subjective, codes have gray areas, and board composition matters. The confidence score reflects real uncertainty. A 6-week deferral at $25k/day carry on a commercial project = $1.05M. State that when relevant. Missing Bailey Bill certification timing can cost $500K+. Say that too.
+
+## Secretary of Interior Standards (federal guidelines historic boards follow):
+1. Use a property for its historic purpose or a compatible one.
+2. Retain historic character — don't remove distinctive features.
+3. Recognize each property as a physical record of its time.
+4. Changes that create a false sense of historical development shall not be undertaken.
+5. Distinctive materials, features, and construction techniques shall be preserved.
+6. Deteriorated features shall be repaired rather than replaced.
+7. Chemical or physical treatments shall use the gentlest means possible.
+8. Archaeological resources shall be protected.
+9. New additions shall be differentiated from old and compatible in materials, size, scale.
+10. New additions shall be reversible.
+
+## IMAGE ANALYSIS
+When user uploads images or PDFs, analyze: materials visible, height/scale/mass relative to context, window proportions and rhythm, streetscape compatibility, submittal completeness, mock-up quality, zoning compliance indicators, flood elevation context, tax credit eligibility indicators.
+
+## OUTPUT FORMAT
+Return ONLY valid JSON in this exact structure. Flags must be organized by review_layer. Each layer must appear even if it has no flags (empty array). Overall confidence score reflects the project's probability of clearing ALL review layers without major redesign or delay.
+
+{"confidence":number,"confidence_color":"red"|"yellow"|"green","summary":"One line, developer language — what's the overall situation","board_recommendation":"Which boards/agencies, which phase, key sequencing advice","layers":[{"layer":"DesignReview","label":"Design Review","flags":[{"type":"red"|"yellow"|"green"|"blue","title":"Direct title","body":"Developer-language explanation with cost implications","precedent":{"address":"string","board":"string","date":"string","decision":"string","vote":"string","detail":"What happened and why it matters"}|null,"fix":"Action to take"|null}]},{"layer":"Zoning","label":"Zoning Compliance","flags":[]},{"layer":"Building","label":"Building & Safety","flags":[]},{"layer":"Stormwater","label":"Stormwater / DHEC / Flood","flags":[]},{"layer":"TaxCredits","label":"Tax Credits & Incentives","flags":[]}],"recommendations":["Prioritized. Direct. Developer language. List in order of urgency."]}`;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATE MODULES — One per state. Shared across all municipalities in that state.
+// ═══════════════════════════════════════════════════════════════════════════════
+const STATE_MODULES={
+
+SC: `## LAYER 3: BUILDING & SAFETY (IBC 2021 / IRC 2021 as adopted by SC)
+
+### OCCUPANCY CLASSIFICATION
+- Always identify likely occupancy group: A (assembly), B (business), E (educational), I (institutional), M (mercantile), R-1 (hotel/transient), R-2 (multi-family), R-3 (single-family), S (storage), mixed.
+- Mixed occupancy: Separated or nonseparated? Fire barriers required for separated. Additive allowable area for nonseparated.
+
+### CONSTRUCTION TYPE
+- Type I/II (non-combustible): Required for high-rises (75ft+) and large assembly occupancies.
+- Type III (ordinary): Masonry exterior, wood interior. Common in Charleston historic rehab.
+- Type V (combustible wood frame): Single/multi-family, max height per occupancy.
+- Historic structures: May qualify for SC Alternative Compliance path. Flag if Secretary of Interior Standards rehab allows maintaining non-compliant construction type.
+
+### KEY CODE FLAGS TO RAISE
+- EGRESS: R-2 multi-family — each unit needs 1 exit (2 if 4+ stories or >10 units on floor). Check corridor lengths.
+- FIRE SEPARATION: Between occupancies, between units in R-2. 1-hr minimum for most mixed occupancy.
+- ACCESSIBILITY (ADA/SC): All new commercial construction. Rehab of historic: "maximum extent feasible" standard applies. Path of travel to altered area required.
+- SPRINKLERS (NFPA 13/13R): Required for R-1/R-2 4+ stories, all A occupancies >5,000 sqft, all I occupancies. 13R for R-2 up to 4 stories.
+- MEANS OF EGRESS: Travel distance, common path of egress, number of exits. Flag if described project seems to exceed limits.
+- ENERGY CODE (IECC 2021 as adopted by SC): New construction and major renovations. Historic rehab: alternative compliance available.
+- STRUCTURAL: Flag if project involves addition to historic masonry (lateral loads, foundation capacity). Major rehab of pre-1940 structures likely needs structural assessment.
+
+### HISTORIC REHAB CODE PATH
+- SC adopts IBC Chapter 34 (Existing Buildings) with amendments.
+- Alternative compliance per IEBC (International Existing Building Code) allows deviations from full new construction standards.
+- Work area method: Only altered areas must comply (not entire building).
+- Change of occupancy to more hazardous: triggers full egress/sprinkler upgrade.
+
+## SC DHEC & ENVIRONMENTAL (applies statewide)
+- Projects disturbing 1+ acre: NPDES Construction General Permit required from DHEC.
+- Any project near tidewater, wetlands, or with fill: May require DHEC OCRM (Office of Ocean and Coastal Resource Management) permit.
+- Wetland delineation: Required before any fill near water features. Army Corps 404 permit may apply.
+- Historic contamination: Former dry cleaners, gas stations, industrial uses may have Phase I/II ESA requirements.
+- Lead paint/asbestos: Pre-1978 structures likely have lead paint. Pre-1980 may have asbestos. Abatement required before demo/major rehab.
+
+## SC STATE TAX CREDITS & INCENTIVES
+
+### FEDERAL HISTORIC REHABILITATION TAX CREDIT (20%)
+- Available for income-producing properties on National Register (individually or as contributing to district).
+- 20% credit on Qualified Rehabilitation Expenditures (QREs).
+- Must follow Secretary of Interior Standards. Certified by NPS via 3-part application.
+- Can stack with state credits.
+- CRITICAL TIMING: Must get NPS Part 1 (significance certification) BEFORE starting work for safest path to credit.
+
+### SC STATE HISTORIC REHABILITATION TAX CREDIT (10% or 25%)
+- SC Code Sec. 12-6-3535. Taxpayers qualifying for federal 20% may also qualify for state 10% OR optional 25% (capped at $1M per certified historic structure).
+- FY 25-26 (July 2025-June 2026): Preliminary and final fees SUSPENDED per proviso 117.153.
+- Contact: Christopher Tenny, SC SHPO, 803-896-5638.
+
+### ABANDONED BUILDINGS REVITALIZATION CREDIT
+- Can be combined with historic rehabilitation credits (federal + state).
+- Credit against real property taxes for rehabilitating abandoned buildings.
+- Cannot combine both the Textile Revitalization Credit AND the Abandoned Buildings Credit — choose one.
+
+### SC HURRICANE RETROFIT CREDITS
+- SC Code 12-6-3660: Credit for Retrofitting Fortification Costs.
+- SC Code 12-6-3665: Credit for Sales/Use Tax on retrofit purchases.
+
+### CREDIT STACKING STRATEGY
+- Federal 20% + State 10-25% + Bailey Bill = potentially 30-45% of rehab costs offset PLUS 20-year tax freeze.
+- All credit paths require Secretary of Interior Standards compliance — which aligns with design review board approval requirements. A board-approved project has a head start.
+- Abandoned Buildings Revitalization Credit can stack with historic credits (cannot combine with Textile Revitalization Credit).`
+
+}; // end STATE_MODULES
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// JURISDICTION MODULES — One per municipality.
+// Each contains: prompt text, loading steps, decisions feed, fee schedule.
+// To add a new jurisdiction: add a new key to this object. That's it.
+// ═══════════════════════════════════════════════════════════════════════════════
+const JURISDICTIONS={
+
+city_of_charleston: {
+  name: 'City of Charleston',
+  state: 'SC',
+  permitCenter: '2 George Street, Charleston, SC 29401',
+  permitPhone: '843-724-3765',
+
+  // ─── Loading animation steps ───────────────────────────────────────────
+  loadingSteps: [
+    "Checking BAR/DRB jurisdiction and district...",
+    "Scanning 2,400+ BAR decisions for matching precedents...",
+    "Analyzing materials and architectural compatibility...",
+    "Running zoning compliance check (height, FAR, setbacks, use)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater, DHEC, and flood zone exposure...",
+    "Checking Bailey Bill eligibility and tax credit timing...",
+    "Mapping federal & state historic rehab credit qualification...",
+    "Cross-referencing HCF, PSC, and board member patterns...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  // ─── System prompt: jurisdiction-specific knowledge ────────────────────
+  prompt: `## JURISDICTION: CITY OF CHARLESTON, SC
+
+## LAYER 1: BAR/DRB ARCHITECTURAL REVIEW
+
+### DECISION DATABASE — MATERIALS:
+VINYL WINDOWS — 0% APPROVAL. Always rejected. 275 Ashley Ave BAR-S 2/27/25 DENIED 5-0. 6 F Street BAR-S 2/27/25: "vinyl windows not allowed."
+ALUMINUM-CLAD SDL WINDOWS — Preferred historic replacement. Per BAR Policy.
+VINYL SIDING — Rejected in all historic districts.
+CEMENTITIOUS PANELS — Neutral on new construction. 81 Gadsden BAR-L 1/8/25 APPROVED 5-0 (staff neutral). 573 Meeting BAR-L 6/11/25 DEFERRED (joints prone to water intrusion).
+STANDING SEAM (ENGINEERED) — Split. 141 Wentworth BAR-S 2/27/25 APPROVED 3-2 (Fenno+Altman opposed). Only passed due to low visibility.
+COPPER ROOF (UNPAINTED) — Contentious. 32 Charlotte BAR-S 2/27/25 APPROVED 4-1 (Fenno opposed). HCF: "prefer painted."
+METAL STOREFRONT — Rejected on historic. 348 King BAR-L 1/8/25: "must remain wood."
+BIFOLD SHUTTERS — Addition only. 55 Elizabeth BAR-S 2/27/25: "no bifold" on existing.
+CORRUGATED METAL — Conditionally. 573 Meeting (One80 Place) BAR-L 6/11/25: fasteners must be color-matched.
+GLASS/GFRC — Require complete mock-up. 71 George BAR-L 6/11/25 DEFERRED (incomplete mock-up).
+
+### BOARD MEMBERS:
+BAR-S: Fenno (STRICTEST, dissented 3x in one meeting on materials), Turner (pragmatic, visibility-weighted), Altman (traditionalist on Cat 2-3, flexible on new), Van Slambrook (procedural), Cobb (supportive).
+BAR-L: Meadors (detail-oriented), Ramos (architect), Trantham, Brown, Watkins, Sobchuk. More technically rigorous.
+DRB: Stevens (Chair), Boyd, Whitener, Eubanks. "No bright or garish colors" policy.
+
+### PUBLIC COMMENT:
+HCF: Present ~65% of meetings. Opposition = strong denial indicator. Support = green light. Opposes hotel expansion.
+PSC: More pragmatic. "Recommend approval" = strong signal.
+
+### COMMERCIAL RULES:
+ACCOMMODATIONS OVERLAY: Hotels only within zone. Outside = rezoning 6-12 months + organized opposition. 5,167 existing rooms + 3,650 entitled.
+SIGNAGE: Window graphics max 20%. Photos = "advertising." Illuminated signs only for after-dark businesses (Ferguson 70 Romney DENIED 5-0).
+MOCK-UPS: Board cracking down. 71 George + 573 Meeting both DEFERRED Jun 2025. "Decline in workmanship." Must show finished conditions.
+HEIGHT DISTRICTS: Multiple zones. Verify limits.
+50% RULE: Renovation >50% of assessed value = FEMA flood elevation.
+STREETSCAPES: Required. Multiple flagged for missing (8 Motley Ln, 6 F St).
+DEMOLITION: Mid-century can be approved with preservation report + commemoration commitment (106 Coming YWCA APPROVED 4-0).
+
+### KEY PRECEDENTS:
+411 Meeting: 300-room hotel, 10 years regulatory. Housing requirement removed Nov 2025.
+81 Gadsden: 5-story Ronald McDonald House. Cementitious neutral. Soldier coursing accepted.
+12 Oliver Court: New mixed-use. Pre-consulted City Architect on roof angle. APPROVED.
+106 Coming (YWCA): Mid-century demolition APPROVED 4-0 with preservation report + commemoration commitment.
+
+### BAR ARCHITECTURAL PRINCIPLES (2017, incorporated by reference Sec. 54-236):
+- HEIGHT, SCALE, MASS: Must relate to immediate surroundings. Taller buildings belong on spine streets, tapering toward water edges.
+- WINDOWS: Vertical windows preferred. Human-scale proportions. Repetitive horizontal rhythm, not too repetitive vertically.
+- MATERIALS: Must be compatible with context. New construction should be "of our time" — not fake historic, but compatible and durable.
+- ADDITIONS: Must be clearly differentiated from historic fabric. Must be subordinate to the original structure.
+- SITE: Buildings should remain in original location unless moving prevents reasonable stair introduction. Entry stairs preferred masonry.
+- STREETSCAPE: New construction must include streetscape elevation at scale showing adjacent buildings for comparison.
+
+## LAYER 2: ZONING COMPLIANCE (City of Charleston Zoning Ordinance, Article 54)
+
+### HEIGHT DISTRICTS (Sec. 54-306)
+- HD 2.5-3: Max 3 stories. Attic not habitable. Nonresidential ground floor max 14ft. BAR may waive attic limitation.
+- HD 3.5: Max 3.5 stories. BAR may permit additional half story (up to 50ft max) based on architectural merit and context.
+- HD 4: Max 4 stories.
+- HD 5 & 6: Max 4 stories base. Additional stories up to 12 permitted with specific performance standards.
+- HD 3X: No structure shall exceed height equal to 3x the least dimension measured from center of right-of-way to building face. Min 30ft on any fronting street.
+- HD 85/125 (MUSC area): Base 85ft. Portions above 85ft must set back 55ft from center of street ROW and occupy no more than 50% of building site coverage.
+- HD 85/200: Similar to 85/125 with higher maximum.
+- CRITICAL: In Height Districts where additional height may be awarded on architectural merit, if the property is NOT under BAR jurisdiction, the owner MUST still submit plans to BAR for review (Sec. 54-306(14)). No building rated Category 1 or 2 on the Historic Architecture Inventory can exceed its existing height unless approved by BAR.
+- Utilitarian appurtenances (elevator penthouses, mechanical equipment): Max 9ft above roofline. Must be placed to rear or side. Structures over 4 stories require sidewalks no less than 10ft wide.
+
+### KEY ZONING DISTRICTS
+- GB (General Business): Commercial uses, max height per district.
+- SR-1/SR-2/SR-3: Single-family residential. ADUs permitted per Sec. 54-208.4.
+- MR (Multi-Residential): Multi-family, max FAR varies.
+- MU-1/MU-2 (Mixed Use): Commercial ground floor required. Residential above.
+- MU-1/WH (Workforce Housing): Mandatory 20% affordable units. Fewer parking requirements.
+- Accommodations Overlay Zone: Hotels ONLY within zone. Outside = rezoning 6-12 months + opposition.
+- 5,167 existing hotel rooms + 3,650 entitled on the peninsula as of 2025.
+
+### SETBACKS & FAR
+- Setbacks vary by district. Always flag if project description implies zero-lot-line or reduced setbacks.
+- FAR (Floor Area Ratio): Varies by district. Commercial MU-1 typically 2.0-3.0. Flag any project that appears to exceed.
+- Parking: Required per use. Workforce housing gets reduced minimums. Short-term rental use changes parking calc.
+
+### CHARLESTON ADU REGULATIONS (Sec. 54-208.4)
+- Permitted in ALL base zoning districts citywide (since 2020 ordinance).
+- Max 850 sqft conditioned floor area. Max 2 adult occupants.
+- One additional off-street parking space required (on top of principal structure requirements).
+- Cannot be used as short-term rental.
+- Owner must occupy either the principal structure or the ADU as primary residence.
+- Affordability requirement removed in April 2022 (except ADUs built with city grant funds).
+- If rented using city grant funds, must meet 80% AMI rental thresholds.
+- Must be architecturally compatible with principal structure and neighborhood context.
+- Detached ADU max 25ft height. Must comply with all setback requirements for the zoning district.
+- Cannot be sold separately from the principal dwelling (recorded covenant required).
+- City offers limited grant funds for ADU design and construction assistance.
+
+### DEMOLITION & 50% RULE
+- Renovation exceeding 50% of assessed value = FEMA flood elevation compliance required.
+- Demolition of Category 1/2 structures: BAR approval required. Preservation report + commemoration commitment can enable approval (106 Coming YWCA APPROVED 4-0).
+
+## CHARLESTON FLOOD CONTEXT
+- Virtually all of the lower peninsula is in FEMA Zone AE or VE.
+- Base Flood Elevation (BFE): Varies by location. Typical lower peninsula BFE is 11-13ft NAVD88.
+- Freeboard: City of Charleston requires 1ft above BFE for new construction. Some areas require 2ft.
+- 50% Rule: Improvement costing >50% of pre-improvement market value = substantial improvement = must elevate entire structure to BFE + freeboard.
+- Historic structures in historic districts: May apply for variance to 50% rule. Not guaranteed.
+- Projects disturbing <1 acre: City of Charleston Land Disturbance Permit required.
+- Post-construction stormwater: New impervious surface >2,500 sqft triggers City stormwater management requirements.
+- Density bonus points available for: green roofs (700sqft/30% or 1,500sqft/60%), low-impact development, stormwater management (Sec. 54-299.32).
+- Tidal flooding and sea level rise: Flag any project in FEMA Zone AE below elevation 10ft.
+
+## CHARLESTON TAX CREDIT SPECIFICS
+
+### BAILEY BILL (Local Property Tax Freeze)
+- SC Code Sec. 4-9-195 and 5-21-140.
+- City of Charleston freezes property tax assessment at PRE-rehabilitation fair market value for up to 20 YEARS.
+- MUST apply BEFORE work begins. Preliminary certification gives 2-year window.
+- Property must receive historic designation. Rehabilitation must be approved by BAR or SHPO.
+- On a $5M renovation: potentially saves hundreds of thousands in property taxes over 20 years.
+- CRITICAL: Missing this window is an irreversible financial loss. Flag aggressively.
+
+### NATIONAL REGISTER STATUS
+- Most of the Charleston peninsula is within a National Register Historic District.
+- Check if property is: (a) individually listed, (b) contributing to a listed district, (c) non-contributing.
+- Non-contributing structures: Not eligible for federal 20% credit but may still qualify for state credits.
+
+### DENSITY BONUSES & WORKFORCE HOUSING (Sec. 54-299.32)
+- Points-based density bonus system within designated districts.
+- Points awarded for: green roofs, stormwater management, low-impact development, bicycle facilities.
+- Article 2, Part 15: Mandatory inclusionary zoning — 20% of units must be affordable in Workforce Housing Districts.
+- Sec. 54-317: Significantly fewer parking spaces required for affordable housing.
+- MU-1/WH (Mixed-Use 1/Workforce Housing) zoning designation.`,
+
+  // ─── Decisions feed data ───────────────────────────────────────────────
+  decisions: [
+    {board:'BAR-S',date:'Feb 27, 2025',address:'275 Ashley Ave',outcome:'denied',vote:'5–0',desc:'Vinyl window replacement throughout historic structure.',takeaway:'Vinyl windows remain an absolute denial. No exceptions in any historic district.'},
+    {board:'BAR-S',date:'Feb 27, 2025',address:'141 Wentworth St',outcome:'approved',vote:'3–2',desc:'Standing seam engineered metal roof on rear addition, low street visibility.',takeaway:'Passed narrowly due to low visibility. Fenno and Altman dissented. Don\'t count on this precedent for visible elevations.'},
+    {board:'BAR-S',date:'Feb 27, 2025',address:'32 Charlotte St',outcome:'approved',vote:'4–1',desc:'Unpainted copper roof proposed. HCF preferred painted finish.',takeaway:'Copper approved but contentious. HCF opposition noted. Fenno dissented. Factor in board composition.'},
+    {board:'BAR-S',date:'Feb 27, 2025',address:'55 Elizabeth St',outcome:'denied',vote:'5–0',desc:'Bifold shutters proposed on existing historic windows.',takeaway:'Bifold shutters on existing openings are never approved. Addition-only context only.'},
+    {board:'BAR-L',date:'Jun 11, 2025',address:'71 George St',outcome:'deferred',vote:'N/A',desc:'GFRC panel mock-up deemed incomplete. Board required finished-condition samples.',takeaway:'Board cracking down on mock-up quality. Incomplete submissions = automatic deferral. Show finished conditions.'},
+    {board:'BAR-L',date:'Jun 11, 2025',address:'573 Meeting St',outcome:'deferred',vote:'N/A',desc:'Cementitious panel joints flagged for potential water intrusion. Corrugated metal fasteners must be color-matched.',takeaway:'Two conditions flagged on same project. Resubmit with sealed joint details and color-matched fasteners specified.'},
+    {board:'BAR-L',date:'Jan 8, 2025',address:'81 Gadsden St',outcome:'approved',vote:'5–0',desc:'5-story Ronald McDonald House. Cementitious panels, soldier coursing. Staff neutral on material.',takeaway:'Institutional scale new construction approved. Cementitious neutral when detailed correctly. Strong submittal package matters.'},
+    {board:'BAR-L',date:'Jan 8, 2025',address:'348 King St',outcome:'denied',vote:'N/A',desc:'Metal storefront replacement on historic commercial building. Board required wood.',takeaway:'Historic storefronts must remain wood. Metal is not an approved substitute on contributing structures.'},
+    {board:'BAR-S',date:'Feb 27, 2025',address:'6 F St',outcome:'deferred',vote:'N/A',desc:'Missing streetscape elevation. Vinyl windows flagged. Submittal incomplete.',takeaway:'Two fatal issues: no streetscape elevation + vinyl windows. Always submit streetscape with adjacent buildings at scale.'},
+    {board:'DRB',date:'Mar 2025',address:'12 Oliver Ct',outcome:'approved',vote:'N/A',desc:'New mixed-use infill. Applicant pre-consulted City Architect on roof pitch prior to submittal.',takeaway:'Pre-consultation with City Architect paid off. New construction approved cleanly. This is the model process.'},
+  ],
+
+  // ─── Board filter buttons ──────────────────────────────────────────────
+  boardFilters: [
+    {label:'All Boards', value:'all'},
+    {label:'BAR-S (Small)', value:'BAR-S'},
+    {label:'BAR-L (Large)', value:'BAR-L'},
+    {label:'DRB', value:'DRB'},
+    {label:'✓ Approved', value:'approved'},
+    {label:'✗ Denied', value:'denied'},
+    {label:'⟳ Deferred', value:'deferred'},
+  ],
+
+  decisionsSource: {
+    label: 'City of Charleston Agenda Center',
+    url: 'https://www.charleston-sc.gov/AgendaCenter/Board-of-Architectural-Review-1/'
+  },
+
+  // ─── Fee schedule ──────────────────────────────────────────────────────
+  feeSources: [
+    {label:'Building & Trade Permit Fee Schedule', url:'https://www.charleston-sc.gov/DocumentCenter/View/17002/Building--Trade-Permit-Fee-Schedule'},
+    {label:'PPS Fee Schedule (updated 2/1/2024)', url:'https://www.charleston-sc.gov/DocumentCenter/View/28244/PPS-Fee-Schedule-Updated-2024'},
+  ],
+  feeSourceNote: 'All fees verified from official City of Charleston sources: Building & Trade Permit Fee Schedule (Ord. 2019-064, eff. Oct 1 2019) and Dept. of Planning, Preservation & Sustainability Fee Schedule (updated 2/1/2024). BAR/DRB fees are charged per review phase — totals shown assume full project lifecycle. Fees are doubled for after-the-fact permit applications. Does not include trade sub-permits (electrical, plumbing, mechanical), Fire Marshal fees, DHEC, or consultant fees. Verify final amounts at the Permit Center, 2 George Street, or call 843-724-3765.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000)  return 15 + Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260 + Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460 + Math.ceil((val-100000)/1000)*3;
+    return 1660 + Math.ceil((val-500000)/1000)*2;
+  },
+
+  barFeeFromVal(val, isLarge){
+    if(isLarge){
+      if(val<=25000)       return 100;
+      if(val<=100000)      return 250;
+      if(val<=5000000)     return 200;
+      if(val<=15000000)    return 400;
+      return 500;
+    } else {
+      if(val<=10000)       return 100;
+      if(val<=50000)       return 200;
+      if(val<=500000)      return 300;
+      if(val<=2000000)     return 400;
+      return 500;
+    }
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    const fmt=n=>'$'+n.toLocaleString();
+
+    if(val>0){
+      lines.push({label:'Permit Application Fee',amt:40,src:'Building & Trade Fee Schedule §APPFEE'});
+      total+=40;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){
+        lines.push({label:'Building Permit Fee',amt:bp,src:'Building & Trade Fee Schedule, pp.3-4'});
+        total+=bp;
+        const pr=Math.round(bp*0.5);
+        lines.push({label:'Plan Review Fee (50% of permit fee)',amt:pr,src:'Building & Trade Fee Schedule §PLANREVIEW'});
+        total+=pr;
+      }
+    }
+
+    if(boards.bar && val>0){
+      const isLarge = sqft>10000 || ['new_commercial','hotel','mixed_use'].includes(type);
+      const phFee = this.barFeeFromVal(val, isLarge);
+      const boardLabel = isLarge ? 'BAR-L' : 'BAR-S';
+      const phases = type==='residential_reno'||type==='adu' ? 2 : 4;
+      const barTotal = phFee * phases;
+      lines.push({label:`${boardLabel} Application Fee (${phases} phases × ${fmt(phFee)})`,amt:barTotal,src:'PPS Fee Schedule p.2 (eff. 2/1/2024)'});
+      total+=barTotal;
+      if(type==='demo'||boards.demo){
+        const demoFee = sqft>5000 ? 500 : 150;
+        lines.push({label:`BAR Demolition Review (${sqft>5000?'major':'minor'})`,amt:demoFee,src:'PPS Fee Schedule p.2'});
+        total+=demoFee;
+      }
+    }
+
+    if(boards.drb && val>0){
+      const phFee = this.barFeeFromVal(val, true);
+      const phases = 4;
+      const drbTotal = phFee * phases;
+      lines.push({label:`DRB Application Fee (${phases} phases × ${fmt(phFee)})`,amt:drbTotal,src:'PPS Fee Schedule p.2 — DRB uses BAR-L tier'});
+      total+=drbTotal;
+    }
+
+    if(boards.bza){
+      const isResSmall = ['residential_reno','adu'].includes(type);
+      const bzaFee = isResSmall ? 200 : 400;
+      lines.push({label:`BZA Variance Fee (${isResSmall?'residential ≤2 units':'non-residential / 3+ units'})`,amt:bzaFee,src:'PPS Fee Schedule p.1'});
+      total+=bzaFee;
+    }
+
+    if(boards.demo && !boards.bar){
+      const dp=this.calcBuildingPermit(val||sqft*50||5000);
+      if(dp>0){lines.push({label:'Demo Building Permit Fee',amt:dp,src:'Building & Trade Fee Schedule p.4'});total+=dp;}
+    }
+
+    if(boards.landmark){
+      lines.push({label:'Rezoning / Landmark Application (base)',amt:345,src:'PPS Fee Schedule p.1 — verify with Planning'});
+      total+=345;
+    }
+
+    if(boards.bailey){
+      lines.push({label:'Zoning Verification Letter (Bailey Bill prerequisite)',amt:30,src:'PPS Fee Schedule p.1'});
+      total+=30;
+      lines.push({label:'SC State Historic Tax Credit Certification',amt:0,note:'No state fee — administered through SHPO; federal 20% credit via NPS',src:'SC Dept. of Archives & History / NPS'});
+    }
+
+    return {lines, total};
+  },
+
+  // Layer display metadata
+  layerMeta: {
+    'DesignReview': {emoji:'🏛',color:'var(--green-deep)', label:'BAR/DRB Design Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOUNT PLEASANT, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+mount_pleasant: {
+  name: 'Town of Mount Pleasant',
+  state: 'SC',
+  permitCenter: '100 Ann Edwards Lane, Mount Pleasant, SC 29464',
+  permitPhone: '843-884-8517',
+
+  loadingSteps: [
+    "Checking DRB / HDPC jurisdiction and overlay districts...",
+    "Scanning Commercial Design Review Board decisions...",
+    "Analyzing materials and Lowcountry Vernacular compatibility...",
+    "Running zoning compliance check (height, setbacks, BPAS)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater, DHEC, and flood zone exposure...",
+    "Calculating impact fees (transportation, fire, recreation)...",
+    "Checking Old Village Historic District COA requirements...",
+    "Mapping federal & state historic rehab credit qualification...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: TOWN OF MOUNT PLEASANT, SC
+
+## LAYER 1: DESIGN REVIEW
+
+Mount Pleasant has TWO design review bodies — understand which one applies:
+
+### COMMERCIAL DESIGN REVIEW BOARD (CDRB)
+- Reviews ALL new commercial construction, remodeling, and alteration activity.
+- Meets: Last Wednesday of each month at 5:00 PM, Mount Pleasant Municipal Complex, 100 Ann Edwards Lane.
+- Submittals required two weeks prior to meeting date.
+- Focus: Maintaining "sense of place" — Lowcountry Vernacular and Mount Pleasant Vernacular design principles.
+
+### CDRB BOARD MEMBERS (current):
+- Seat 3: Richard Perez (Licensed Architect) — term through Jan 2028
+- Seat 4: Lee Cave (At-large) — term through Aug 2026
+- Seat 5: Richard Lambert (Professional Engineer) — term through Jan 2027
+- Seat 6: Timothy Kiel (At-large) — term through Jul 2028
+Board has architect and engineer seats — technically rigorous review. Expect detailed questions on materials, massing, and stormwater.
+
+### HISTORIC DISTRICT PRESERVATION COMMISSION (HDPC)
+- Reviews ALL exterior changes to buildings and property within the Old Village Historic District.
+- Approval (Certificate of Appropriateness / COA) required BEFORE any demolition, construction, or alteration.
+- Old Village is on National Register of Historic Places (listed March 30, 1973).
+- 37-block area bounded by Shem Creek (north), Whilden Street (east), old bridge/marsh (south), Charleston Harbor (west).
+- Buildings designated as either Historic or Non-Historic. Historic structures follow stricter guidelines.
+
+### MOUNT PLEASANT VERNACULAR DESIGN PRINCIPLES (Chapter 150, Subchapter H)
+- PURPOSE: Maintain the "traditional small village feel" of Mount Pleasant.
+- SCALE: Buildings should not exceed traditional 38-40ft vernacular height. Buildings taller than 3 stories and 45ft must employ traditional design principles to mitigate excessive massing.
+- LOCAL DESIGN QUALITY: Symbolic design for corporate identity is "highly discouraged." CDRB may work with applicants on limited signature elements while retaining project design unique to Mount Pleasant.
+- ARCHITECTURAL COMPATIBILITY: Structures must be compatible with adjacent and surrounding structures.
+- TOP/MIDDLE/BASE: Taller buildings must employ traditional articulation — distinct base, middle, and top sections per § 150.678.
+- BUILDING STEP-BACK: Required for structures exceeding certain heights per § 150.676 to reduce perceived massing from street level.
+
+### KEY PRECEDENTS:
+PATRIOTS POINT ANNEX (Dec 2025): Major waterfront development — Seafair Retail Village, Grand Patriot Hotel, Grand Lawn. Plans changed after initial CDRB review — less green space, no interconnected pathway. Significant community opposition. Councilmember Tinkey raised concerns about review scheduling. Shows: waterfront projects get intense scrutiny; community engagement can delay or reshape projects significantly.
+
+### OLD VILLAGE HISTORIC DISTRICT GUIDELINES:
+- STREETSCAPE: All buildings subject to design guidelines regardless of size, age, or historical significance. New construction must be harmonious with block character and streetscape.
+- MATERIALS: Approved Materials List maintained by HDPC. New materials must be approved before COA application. New technology accepted when compatible.
+- ADDITIONS: Must be compatible with size, scale, and character of property and streetscape. Must not overwhelm existing primary structure.
+- ACCESSORY STRUCTURES: Max 20ft height, no more than 1.5 stories. Must be sited to rear of primary structure.
+- PARKING: Min 2 off-street spaces per residence. Additional spaces for homes over 2,500 sqft at 1 per 1,000 sqft.
+- HISTORIC BUILDINGS: May be considered conforming with respect to any dimension found by HDPC to be of historic significance — existing conditions may supersede conflicting zoning standards.
+
+## LAYER 2: ZONING COMPLIANCE (Mount Pleasant Zoning Code, Chapter 156 — updated effective May 1, 2025)
+
+### HEIGHT LIMITS
+- BASE: No building shall exceed 35 feet in height.
+- FLOOD ZONE EXCEPTION: Buildings in special flood hazard areas may not exceed 40 feet.
+- BUILDING HEIGHT PLAN MAP: Alternate heights may be permitted per the Building Height Plan Map (adopted by reference). ALWAYS check the map for the specific parcel.
+- BOULEVARD OVERLAY DISTRICT & WATERFRONT GATEWAY DISTRICT: Height reductions enacted 2020. Stretches from Ravenel Bridge base toward Bowman Road and East Cooper Medical Center area. Verify current limits — these have been actively debated and modified by Council.
+
+### KEY ZONING DISTRICTS
+- R-1 (Single Family Residential): Low density, large lot. Min lot size varies.
+- R-2 (Medium Density Residential): Duplexes permitted. SR2-OD overlay for older neighborhoods between Coleman Blvd and Historic District — flexible yard requirements for nonconforming lots.
+- R-3 (Multi-Family Residential): Apartments, condos.
+- AB (Areawide Business): General commercial.
+- LB (Limited Business): Neighborhood commercial.
+- PI-1 (Public Institutional): Schools, government.
+- OV-HD (Old Village Historic District): Overlay — uses per underlying zoning, additional design requirements. Setbacks determined during COA review based on existing conditions and adjacent lots.
+- PD (Planned Development): Flexible mixed-use districts. PD-MU requires at least one center and an edge with integrated uses.
+- UC-CBS (Urban Corridor - Coleman/Ben Sawyer): Boulevard overlay with build-to lines of 20-30ft.
+
+### SETBACKS
+- Standard: Vary by district. Front yard setback may be reduced if average setback of existing buildings within 100ft on same block is less than required minimum.
+- Commercial Design Review Overlay: Build-to line of 20-30ft determined by DRB process.
+- Old Village: Setbacks determined during COA review with consideration of existing conditions and adjacent lots.
+- Accessory structures: Cannot extend beyond adjacent front yard setback on corner lots.
+
+### BUILDING PERMIT ALLOCATION SYSTEM (BPAS)
+- CRITICAL AND UNIQUE TO MOUNT PLEASANT. Implemented 2019.
+- Limits number of building permits issued annually to manage growth and infrastructure demands.
+- Applies to residential construction. Check current allocation status before committing to project timeline.
+- Can delay permit issuance even if plans are approved — factor into carry cost calculations.
+
+### CLUSTER DEVELOPMENT (§ 156.305)
+- Density may exceed maximum on developed portion if overall site density maintained.
+- Within Urban Growth Boundary: Min 25% gross site area as open space in perpetuity.
+- Beyond Urban Growth Boundary: Min 50% open space in perpetuity.
+
+## MOUNT PLEASANT FLOOD & STORMWATER
+- Flood zones: Significant portions of Mount Pleasant are in FEMA Zone AE or VE, particularly along Shem Creek, waterfront areas, and low-lying marshland.
+- Freeboard: Structures in flood zones — verify current freeboard requirements with Town.
+- Stormwater: Projects disturbing 1+ acre require NPDES inspection ($300 for 1-10 acres, $500 for 10+ acres). Stormwater Technical Review $200/acre (max $2,000).
+- Land disturbance permits required. Work without permit = $500 penalty + permit fees.
+- OCRM Critical Line: Applicable to waterfront properties — must be shown on survey.
+- Tree preservation: Required plan; trees 3"+ DBH must be shown on survey. Removal now reviewed through building permit process.
+
+## MOUNT PLEASANT IMPACT FEES — CRITICAL COST FACTOR
+Impact fees are a MAJOR cost unique to Mount Pleasant (~$6,509 per single-family home). Must be paid before building permit issuance.
+- TRANSPORTATION: Highest component. Hotels: $2,879.81 per room. Commercial: varies by sqft/use.
+- FIRE PROTECTION: ~$204 per single-family. Commercial: ~$1.14/sqft.
+- RECREATION: $2,412.53 per single-family, $1,569.92 per multi-family unit. Commercial: N/A.
+- MUNICIPAL FACILITIES: Additional per-unit fee.
+- Redevelopment credits may offset new impact fees.
+- ALWAYS factor impact fees into pro forma — they can significantly affect deal economics, especially on multi-family and hotel projects.
+
+## MOUNT PLEASANT TAX CREDIT SPECIFICS
+### BAILEY BILL
+- Mount Pleasant administers its own Bailey Bill program separately from City of Charleston.
+- Same state enabling legislation (SC Code Sec. 4-9-195 and 5-21-140).
+- Freezes property tax assessment at pre-rehabilitation value for up to 20 years.
+- Must apply BEFORE work begins. Applicable to properties within Old Village Historic District and other designated historic properties.
+- Contact Town Planning Department for current application process.
+
+### NATIONAL REGISTER STATUS
+- Old Village Historic District is on National Register (listed 1973). Properties within may qualify for federal 20% historic tax credit if contributing.
+- Properties outside the Old Village: Check if within any other National Register district or individually listed.`,
+
+  decisions: [
+    {board:'CDRB',date:'Dec 2025',address:'Patriots Point Annex',outcome:'deferred',vote:'N/A',desc:'Major waterfront development — Seafair Retail Village, Grand Patriot Hotel, Grand Lawn. Plans changed since initial review with less green space. Significant community opposition.',takeaway:'Waterfront gateway projects get maximum scrutiny. Changed plans after initial review = red flag. Community engagement is decisive in Mount Pleasant.'},
+    {board:'CDRB',date:'2025',address:'Coleman Blvd Corridor',outcome:'approved',vote:'N/A',desc:'Mixed-use infill along Coleman Boulevard Urban Corridor. Build-to line compliance reviewed. Lowcountry Vernacular elements required.',takeaway:'Coleman Blvd corridor projects must show build-to line compliance (20-30ft) and Lowcountry Vernacular design. Board expects top/middle/base articulation on taller structures.'},
+    {board:'HDPC',date:'2025',address:'Old Village Renovation',outcome:'approved',vote:'N/A',desc:'Addition to existing historic home. Compatible scale, approved materials, rear siting of addition.',takeaway:'Old Village additions must be subordinate to primary structure. Rear siting preferred. Use approved materials list — get new materials pre-approved before COA submission.'},
+    {board:'HDPC',date:'2025',address:'Old Village New Construction',outcome:'deferred',vote:'N/A',desc:'New single-family in Old Village. Board requested revised streetscape context images and reduced massing.',takeaway:'New construction in Old Village must demonstrate harmony with block character. Submit thorough streetscape context images. Massing is the primary concern.'},
+    {board:'CDRB',date:'2024',address:'Shem Creek Area Commercial',outcome:'approved',vote:'N/A',desc:'Restaurant/retail development near Shem Creek. OCRM critical line shown on survey. Stormwater management plan approved.',takeaway:'Shem Creek area projects require OCRM critical line documentation. Stormwater management is non-negotiable. Factor environmental review into timeline.'},
+  ],
+
+  boardFilters: [
+    {label:'All Boards', value:'all'},
+    {label:'CDRB', value:'CDRB'},
+    {label:'HDPC', value:'HDPC'},
+    {label:'✓ Approved', value:'approved'},
+    {label:'✗ Denied', value:'denied'},
+    {label:'⟳ Deferred', value:'deferred'},
+  ],
+
+  decisionsSource: {
+    label: 'Town of Mount Pleasant Agenda Center — Design Review Board',
+    url: 'https://www.tompsc.com/AgendaCenter/Design-Review-Board-11/'
+  },
+
+  feeSources: [
+    {label:'Building & Development Fee Schedule (eff. July 1, 2024)', url:'https://www.tompsc.com/DocumentCenter/View/48876/EDS-fee-schedule-07012024'},
+    {label:'Impact Fee Estimator', url:'https://www.tompsc.com/154/Estimate-My-Impact-Fees'},
+  ],
+  feeSourceNote: 'All fees from Town of Mount Pleasant Building & Development Fee Schedule (eff. July 1, 2024). Impact fees are separate and must be paid before building permit issuance. Plan review fee = 50% of building permit fee. Work begun without permit = 2X permit fee. Does not include trade sub-permits, DHEC, impact fees, or consultant fees. Verify final amounts at 100 Ann Edwards Lane or call 843-884-8517.',
+
+  calcBuildingPermit(val){
+    // Source: Mount Pleasant EDS Fee Schedule, eff. July 1, 2024
+    if(!val||val<=1000) return 0;
+    if(val<=2000)   return 24 + Math.ceil((val-500)/100)*3;
+    if(val<=50000)  return 69 + Math.ceil((val-2000)/1000)*11;
+    if(val<=100000) return 487 + Math.ceil((val-40000)/1000)*9; // note: schedule says "first $40,000" at this tier
+    if(val<=500000) return 1027 + Math.ceil((val-100000)/1000)*7;
+    if(val<=1000000) return 3827 + Math.ceil((val-500000)/1000)*5;
+    if(val<=5000000) return 6327 + Math.ceil((val-1000000)/1000)*3;
+    return 18327 + Math.ceil((val-5000000)/1000)*1;
+  },
+
+  barFeeFromVal(val, isLarge){ return 0; }, // No BAR in Mount Pleasant
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    const fmt=n=>'$'+n.toLocaleString();
+
+    if(val>0){
+      // Filing fee
+      lines.push({label:'Issuing Filing Fee',amt:30,src:'EDS Fee Schedule (eff. 7/1/2024)'});
+      total+=30;
+
+      // Zoning fee ($75 flat)
+      lines.push({label:'Zoning Fee',amt:75,src:'EDS Fee Schedule — Permit Fee Chart'});
+      total+=75;
+
+      // Building permit (valuation-based)
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){
+        lines.push({label:'Building Permit Fee (valuation-based)',amt:bp,src:'EDS Fee Schedule, Valuation Fee table'});
+        total+=bp;
+        // Plan review = 50% of building permit
+        const pr=Math.round(bp*0.5);
+        lines.push({label:'Plan Review Fee (50% of permit fee)',amt:pr,src:'EDS Fee Schedule'});
+        total+=pr;
+      }
+    }
+
+    // Residential site/stormwater/tree fee
+    if(['new_residential','adu'].includes(type)){
+      lines.push({label:'Single Family Site/SW/Tree Fee',amt:225,src:'EDS Fee Schedule'});
+      total+=225;
+    }
+
+    // Demo
+    if(boards.demo){
+      lines.push({label:'Demolition Permit',amt:100,src:'EDS Fee Schedule'});
+      total+=100;
+    }
+
+    // BZA
+    if(boards.bza){
+      lines.push({label:'Construction Board of Appeals Application',amt:200,src:'EDS Fee Schedule'});
+      total+=200;
+    }
+
+    // Impact fee estimates (residential)
+    if(['new_residential','adu'].includes(type)){
+      lines.push({label:'Impact Fees (est. single-family — transportation, fire, recreation, municipal)',amt:6509,src:'Town of Mount Pleasant Impact Fee Schedule',note:'Varies by use type — verify with Impact Fee Estimator'});
+      total+=6509;
+    }
+
+    // Flood zone determination if relevant
+    if(boards.landmark){ // repurposing landmark toggle for flood zone
+      lines.push({label:'Flood Zone Determination',amt:50,src:'EDS Fee Schedule'});
+      total+=50;
+      lines.push({label:'Elevation Certificate',amt:25,src:'EDS Fee Schedule'});
+      total+=25;
+    }
+
+    // Bailey Bill
+    if(boards.bailey){
+      lines.push({label:'Zoning Verification Letter (Bailey Bill prerequisite)',amt:0,note:'Contact Town Planning for current fee',src:'Town of Mount Pleasant Planning Dept.'});
+      lines.push({label:'SC State Historic Tax Credit Certification',amt:0,note:'No state fee — administered through SHPO; federal 20% credit via NPS',src:'SC Dept. of Archives & History / NPS'});
+    }
+
+    return {lines, total};
+  },
+
+  layerMeta: {
+    'DesignReview': {emoji:'🏛',color:'var(--green-deep)', label:'CDRB / HDPC Design Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NORTH CHARLESTON, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+north_charleston: {
+  name: 'City of North Charleston',
+  state: 'SC',
+  permitCenter: '2500 City Hall Lane (3rd Floor, One Stop Shop), North Charleston, SC 29406',
+  permitPhone: '843-554-5700',
+
+  loadingSteps: [
+    "Identifying zoning district and overlay applicability...",
+    "Checking Navy Yard Historic District / NBRD requirements...",
+    "Checking Olde North Charleston Conservation District...",
+    "Running zoning compliance (setbacks, lot area, use, height)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater, DHEC, and flood zone exposure...",
+    "Checking National Register eligibility and tax credits...",
+    "Reviewing site plan and landscaping requirements...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: CITY OF NORTH CHARLESTON, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### CRITICAL DIFFERENCE FROM CITY OF CHARLESTON:
+North Charleston has NO Board of Architectural Review (BAR) and NO Design Review Board (DRB). There is no citywide architectural review process. This is fundamentally different from the City of Charleston.
+
+Design review only applies in two specific contexts:
+1. NAVY BASE REDEVELOPMENT DISTRICT (NBRD): Projects in the former Naval Base / Navy Yard must comply with NBRD design standards including build-to lines, height districts, 80% lot frontage building facade requirements, street trees, and architectural character standards. The NBRD has its own height district map. Staff review handles concept plans before building permits.
+2. OLDE NORTH CHARLESTON HISTORIC DISTRICT & NEIGHBORHOOD CONSERVATION DISTRICT (Article X of Zoning Ordinance): Overlay around Park Circle and East Montague Avenue. Requires additional design review for new construction and alterations. Handled case-by-case by Planning Department staff — NOT a board. Focus on maintaining neighborhood character, massing, and scale.
+
+### WHAT THIS MEANS FOR DEVELOPERS:
+- Most of North Charleston: NO design review. Get zoning approval + building permit and build. Much faster than City of Charleston.
+- Park Circle / Olde North Charleston overlay: Planning staff review for compatibility. Not a formal board hearing — less adversarial but still has standards.
+- Navy Yard NBRD: Most structured review. Concept plan must be submitted to staff. Height districts, build-to lines, 80% facade coverage, street tree requirements. Closest to Charleston's process but still staff-level, not board.
+- No material approval process — no equivalent of BAR material decisions. You won't get denied for vinyl windows in most of North Charleston (though NBRD has character standards).
+
+### NAVY YARD HISTORIC DISTRICT (National Register, listed 2006):
+- 57 contributing buildings/structures from 1903-1945.
+- Styles: Neo-Classical (1903-1910), Moderne industrial (1910s-WWI), Federal works (inter-war), Utilitarian (late 1930s-WWII).
+- National Register listing means federal historic tax credits (20%) available for qualified rehabilitation.
+- Redevelopment led by Jamestown, Weaver Capital Partners, WECCO Development.
+- Notable projects: Cigar Factory, GARCo Mill, One Cool Blow, Charleston Design District.
+- Height districts within NBRD protect character of historic structures.
+
+### PARK CIRCLE / OLDE NORTH CHARLESTON:
+- North Charleston's oldest neighborhood area (Liberty Hill est. 1870s, Park Circle early 1900s).
+- Most homes built 1915-1945. Some WWII-era military housing neighborhoods.
+- Design overlay aims to prevent incompatible infill development.
+- Not as protective as Charleston's BAR — case-by-case staff review.
+- Growing restaurant/retail scene on East Montague Ave driving development interest.
+
+## LAYER 2: ZONING COMPLIANCE (North Charleston Zoning Ordinance, Appendix A)
+
+### ZONING DISTRICTS:
+- R-1 (Single-Family Residential): Min 6,000 sqft lot (4,500 sqft in Traditional Neighborhood/Mixed Use areas or R-2). Front setback 20ft (or avg of block). Side yard 5ft min (one side 10ft on new subdivisions in suburban). Rear 15% of lot depth (max 30ft required). Max lot occupancy 65%.
+- R-2 (Multi-Family Residential): Min 1,500 sqft per unit (1,200 with common parking). Front 20ft. Side 10ft. Rear 20ft. Max lot occupancy 70%. Townhouses min 18ft lot width (14ft with common parking).
+- R-3 (Mobile Home Residential): Min 6,000 sqft per lot. Front 20ft. Side 10ft. Rear 15ft. Max lot occupancy 65%.
+- AG (Agricultural): Min 4 acres.
+- ON (Neighborhood Office): Max height 25ft. Front 10ft. Side/rear 10ft (waivable with firewall).
+- B-1 (Limited Business): Front 10ft (or avg of block). Side/rear 10ft (waivable with firewall). Landscape plan required.
+- B-2 (General Business): Same as B-1. Broader commercial uses permitted.
+- CRD (Commercial Redevelopment): Min 10,000 sqft lot. Front 10ft. Side 10ft. Rear 15ft. Must meet with Planning Director before permit submission to discuss urban design guidelines.
+- NBRD (Navy Base Redevelopment District): Special standards. Noisette Blvd: build-to 46-56ft from center. All other streets: 30-35ft from center. Side/rear 10ft. 80% lot frontage must be building facade. Height per NBRD height district map. Concept plan required before permits.
+- M-1 (Light Industrial): Front 10ft. Side/rear 10ft (50ft when abutting residential). Landscape plan required.
+- M-2 (Heavy Industrial): Front 10ft. Side/rear 10ft (50ft when abutting residential). Buffer requirements when adjacent to residential.
+
+### SETBACK SUMMARY:
+- Residential R-1: Front 20ft, Side 5ft (10ft one side on new suburban lots), Rear 15% of depth (max 30ft)
+- Multi-family R-2: Front 20ft, Side 10ft, Rear 20ft
+- Commercial B-1/B-2: Front 10ft (or match block avg), Side/rear 10ft
+- Industrial M-1/M-2: Front 10ft, Side/rear 10ft (50ft abutting residential)
+- NBRD: Build-to lines (not setbacks — buildings must be built TO the line, not behind it)
+
+### ACCESSORY DWELLINGS (North Charleston):
+- Accessory dwellings permitted in rear yards of R-1 districts.
+- Max height: cannot exceed height of existing residence. If above detached garage, max 24ft to ridge if primary is single story.
+- Must be 6ft from principal dwelling, 3ft from interior lot lines, 5ft from right-of-way.
+- Can occupy up to 40% of rear yard area.
+- Cannot be sold separately from principal dwelling.
+- NOTE: North Charleston ADU rules are LESS formal than City of Charleston — no specific sqft cap, no occupancy limit, no owner-occupancy requirement in the ordinance text (verify current amendments).
+
+### PARKING:
+- NBRD: Multifamily — min 1 space on-site with alley access. Office/commercial — 2 spaces per 1,000 GSF. Entertainment — 1 per 50 seats (non-fixed) or 1 per 4 seats (fixed). Shared parking within 1,320ft radius counts.
+- Other districts: Standard per-use requirements. Check Article IV for specific use requirements.
+
+### LANDSCAPING & BUFFERS:
+- Buffer Type A: Required between commercial and residential uses.
+- Buffer Type B: Required when mobile home park, multi-family, commercial abuts dissimilar residential.
+- Buffer Type C: Required when industrial abuts residential. Also required for new residential adjacent to industrial.
+- Landscape plan required for R-2, R-3, all commercial, and all industrial.
+- Tree protection ordinance applies citywide (Article VI, Sec. 6-16).
+
+### SIGN REGULATIONS (Article VIII):
+- Separate sign permit required. Standards vary by district.
+- NBRD has specific sign standards that match the Navy Yard character.
+
+## NORTH CHARLESTON FLOOD CONTEXT
+- North Charleston has significant flood exposure — portions along the Ashley River, Cooper River, and interior drainage areas are in FEMA Zone AE.
+- Base Flood Elevation varies by location. Check FEMA FIRM maps for specific parcels.
+- 50% Rule applies: Improvements exceeding 50% of pre-improvement market value on structures in flood zones = substantial improvement = must bring entire structure to BFE + freeboard.
+- North Charleston requires freeboard above BFE for new construction — verify current requirement (typically 1-2ft).
+- Stormwater permit required from Public Works for projects impacting drainage.
+- Projects disturbing <1 acre: City stormwater permit required.
+- Projects near Ashley River or Cooper River tidewater: DHEC OCRM permit may be required.
+
+## NORTH CHARLESTON TAX CREDIT SPECIFICS
+
+### BAILEY BILL APPLICABILITY:
+- North Charleston has adopted the Bailey Bill (SC Code 4-9-195 / 5-21-140).
+- Available for historically designated properties undergoing approved rehabilitation.
+- Freezes assessment at pre-rehab value for up to 20 years.
+- MUST apply BEFORE work begins.
+- Contact North Charleston Planning & Zoning for preliminary certification.
+
+### NATIONAL REGISTER PROPERTIES:
+- Charleston Navy Yard Historic District (listed 2006): 57 contributing resources. Qualifies for federal 20% historic tax credit.
+- Olde North Charleston / Park Circle area: Some individually eligible structures. Check National Register status.
+- Ashley River Historic District: Portion extends into North Charleston. Properties within may qualify.
+- Properties MUST be contributing to a listed district or individually listed for federal 20% credit.
+- Non-contributing structures: Not eligible for federal credit but may qualify for SC state credits.
+
+### CREDIT STACKING:
+- Federal 20% + State 10-25% + Bailey Bill = same stacking opportunity as Charleston.
+- Navy Yard rehab projects are the prime candidates — National Register listing + substantial historic fabric.
+- Park Circle area projects: verify individual eligibility. Not all structures qualify.`,
+
+  decisions: [
+    {board:'Planning',date:'2024-2025',address:'Navy Yard / Noisette Blvd',outcome:'approved',vote:'N/A',desc:'Multiple mixed-use projects approved in NBRD following concept plan review. Height districts and build-to lines were primary review criteria.',takeaway:'NBRD concept plan review is the closest thing to design review in North Charleston. Submit early and meet with Planning Director.'},
+    {board:'Planning',date:'2024-2025',address:'Park Circle / E Montague',outcome:'approved',vote:'N/A',desc:'Infill residential and small commercial projects in Olde North Charleston overlay reviewed by staff for compatibility with neighborhood character.',takeaway:'Park Circle overlay is staff-level review. Focus on massing and scale compatibility with existing 1920s-1940s housing stock.'},
+    {board:'ZBA',date:'2025',address:'Various locations',outcome:'approved',vote:'N/A',desc:'Zoning Board of Appeals heard variance requests for setback reductions and use exceptions. $75 administrative fee per appeal.',takeaway:'ZBA is the primary board you may face in North Charleston. Come prepared with hardship justification for variances.'},
+  ],
+
+  boardFilters: [
+    {label:'All', value:'all'},
+    {label:'Planning Staff', value:'Planning'},
+    {label:'ZBA', value:'ZBA'},
+    {label:'✓ Approved', value:'approved'},
+    {label:'✗ Denied', value:'denied'},
+    {label:'⟳ Deferred', value:'deferred'},
+  ],
+
+  decisionsSource: {
+    label: 'North Charleston Planning & Zoning Department',
+    url: 'https://www.northcharleston.org/business/zoning/index.php'
+  },
+
+  feeSources: [
+    {label:'North Charleston Permit Fee Schedule', url:'https://www.northcharleston.org/business/construction_and_development/permits/permit_fees.php'},
+  ],
+  feeSourceNote: 'All fees from the City of North Charleston Building Permit Fee Schedule. Application filing fee ($30) is non-refundable and applies to all permits. Plan review fee is 50% of building permit fee. Does not include trade sub-permits (electrical $30+, plumbing $30+, mechanical $30+, gas $30+). Verify final amounts at City Hall, 2500 City Hall Lane, 3rd Floor, or call 843-554-5700.',
+
+  calcBuildingPermit(val){
+    // Same tier structure as City of Charleston
+    if(!val||val<=1000) return 0;
+    if(val<=50000)  return 15 + Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260 + Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460 + Math.ceil((val-100000)/1000)*3;
+    return 1660 + Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    const fmt=n=>'$'+n.toLocaleString();
+
+    // $30 non-refundable application filing fee on all building permits
+    if(val>0){
+      lines.push({label:'Permit Application Filing Fee',amt:30,src:'North Charleston Permit Fee Schedule'});
+      total+=30;
+
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){
+        lines.push({label:'Building Permit Fee',amt:bp,src:'North Charleston Permit Fee Schedule'});
+        total+=bp;
+        // Plan review = 50% of building permit fee
+        const pr=Math.round(bp*0.5);
+        lines.push({label:'Plan Review Fee (50% of permit fee)',amt:pr,src:'North Charleston Permit Fee Schedule'});
+        total+=pr;
+      }
+    }
+
+    // NO BAR/DRB fees — North Charleston has no design review board
+    // But note this for the user
+    if(boards.bar || boards.drb){
+      lines.push({label:'Design Review Board Fee',amt:0,note:'North Charleston has no BAR or DRB — no design review fee applies',src:'N/A'});
+    }
+
+    // ZBA / Variance — $75 administrative fee
+    if(boards.bza){
+      lines.push({label:'Zoning Board of Appeals Fee',amt:75,src:'North Charleston Zoning Department'});
+      total+=75;
+    }
+
+    // Demolition — fees based on contract amount (same building permit schedule)
+    if(boards.demo){
+      const dp=this.calcBuildingPermit(val||sqft*50||5000);
+      lines.push({label:'Demolition Permit Filing Fee',amt:30,src:'North Charleston Permit Fee Schedule'});
+      total+=30;
+      if(dp>0){lines.push({label:'Demolition Permit Fee (based on contract value)',amt:dp,src:'North Charleston Permit Fee Schedule'});total+=dp;}
+    }
+
+    // Bailey Bill — Zoning Verification Letter
+    if(boards.bailey){
+      lines.push({label:'Zoning Verification Letter (Bailey Bill prerequisite)',amt:30,note:'Verify current fee with Planning & Zoning',src:'North Charleston Planning & Zoning'});
+      total+=30;
+      lines.push({label:'SC State Historic Tax Credit Certification',amt:0,note:'No state fee — administered through SHPO; federal 20% credit via NPS',src:'SC Dept. of Archives & History / NPS'});
+    }
+
+    return {lines, total};
+  },
+
+  layerMeta: {
+    'DesignReview': {emoji:'📋',color:'var(--text-dark)', label:'Planning & Design Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SULLIVAN'S ISLAND, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+sullivans_island: {
+  name: "Town of Sullivan's Island",
+  state: 'SC',
+  permitCenter: '2056 Middle Street, Sullivan\'s Island, SC 29482',
+  permitPhone: '843-883-5732',
+
+  loadingSteps: [
+    "Checking Design Review Board jurisdiction and historic district...",
+    "Identifying Moultrieville / Atlanticville historic overlay...",
+    "Analyzing neighborhood compatibility and massing standards...",
+    "Running zoning compliance (coverage, square footage, setbacks)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating V-zone / coastal flood exposure and OCRM setbacks...",
+    "Checking DRB modification requests against precedents...",
+    "Mapping federal & state historic rehab credit qualification...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: TOWN OF SULLIVAN'S ISLAND, SC
+
+## LAYER 1: DESIGN REVIEW BOARD (DRB)
+
+### CRITICAL: Sullivan's Island has an ACTIVE Design Review Board that reviews virtually ALL construction.
+- DRB meets every 3rd Wednesday of the month at 4:00 PM at Town Hall.
+- Reviews new construction, renovations, additions, accessory structures, and pool installations.
+- Two-phase process typical: Conceptual approval → Final approval. Board MAY grant final at conceptual if project is straightforward.
+- DRB can grant modifications to zoning standards (setbacks, coverage, square footage) IF design is compatible with surrounding neighborhood (Section 21-111).
+- Certificate of Appropriateness (COA) required before building permit for any exterior work.
+
+### KEY STAFF:
+- Charles Drayton: Director of Planning & Zoning (843-883-5752, cdrayton@sullivansisland.sc.gov)
+- Max Wurthmann: Building Official (843-883-5732)
+- Christina Oxford: Business License & Permit Technician (843-883-5727)
+- Pre-application meetings with Zoning Administrator strongly recommended.
+
+### HISTORIC DISTRICTS:
+- MOULTRIEVILLE LOCAL HISTORIC DISTRICT: Central portion of island. Buildings surveyed and categorized. Sullivan's Island Landmark properties have strictest review.
+- ATLANTICVILLE LOCAL HISTORIC DISTRICT: Eastern portion. Similar protections.
+- Properties identified by historic survey cards with category designations.
+- Fort Moultrie-related structures (NCO Quarters, Post Theatre, etc.) are Sullivan's Island Landmarks.
+- Non-historic homes outside historic districts still require DRB review for new construction and major alterations.
+
+### DESIGN STANDARDS:
+- NEIGHBORHOOD COMPATIBILITY: Primary criterion. Board evaluates whether proposed construction fits the character, mass, and scale of surrounding properties.
+- MASSING: Island vernacular is low-scale residential. Oversized structures relative to lot and neighbors will be scrutinized heavily.
+- PRINCIPAL BUILDING SQUARE FOOTAGE (Sec. 21-27): Maximum allowed based on lot size. Modifications require DRB approval with compatibility justification.
+- PRINCIPAL BUILDING COVERAGE (Sec. 21-25): Maximum lot coverage. Modifications available through DRB.
+- IMPERVIOUS COVERAGE: Strictly tracked. Driveways, patios, pools all count.
+- SECOND STORY SETBACKS / SIDE FACADE: Additional step-back requirements to reduce perceived mass from street.
+- STREETSCAPE RENDERINGS: Required for all submissions requesting relief, additional coverage, or additional square footage. Must include adjacent properties. 3D perspective sketches and models encouraged.
+- VACATION RENTALS: Prohibited except grandfathered properties. No Airbnb.
+
+### CCOD OVERLAY (Coastal Conservation Overlay Districts 1 & 2):
+- CCOD 1 and 2 lots have ADDITIONAL restrictions. None of the standard DRB modification allowances apply to single-family structures on CCOD lots EXCEPT as provided in Section 21-49.
+- DRB approval on neighborhood compatibility basis still required.
+
+## LAYER 2: ZONING COMPLIANCE (Sullivan's Island Zoning Ordinance, Section 21)
+
+### ZONING DISTRICTS:
+- RS (Single-Family Residential): Min 1/2 acre (21,780 sqft). Low density, primarily owner-occupied. This is the majority of the island.
+- LC (Limited Commercial): Small commercial area along Middle Street. Neighborhood-scale retail and restaurant.
+- GC (Government/Conservation): Public lands, parks, Fort Moultrie.
+
+### KEY DIMENSIONAL STANDARDS (RS District):
+- Front setback: 25ft from property line (verify — varies by block context).
+- Side setback: 15ft minimum. Second story side setback additional requirement.
+- Rear setback: 25ft minimum.
+- Max lot occupancy: Varies by lot size.
+- Max height: 38ft from FEMA base flood elevation (BFE) or existing grade, whichever produces a lower structure. CRITICAL for V-zone properties.
+- Accessory structures: Max 18ft height to ridge (or height of existing residence, whichever is less). 6ft from principal dwelling, 3ft from interior lot lines.
+- ADU special exception available per Section 21-20 C — requires DRB approval.
+
+## SULLIVAN'S ISLAND FLOOD & COASTAL CONTEXT
+- ENTIRE ISLAND is in FEMA flood zone — mix of Zone AE and Zone VE (coastal high hazard / velocity wave action).
+- V-ZONE: Most oceanfront and near-ocean properties. V-zone requires elevated construction on pilings. No fill permitted in V-zone. Breakaway walls below BFE only.
+- Base Flood Elevation varies by location — typically 14-17ft NAVD88 on Sullivan's Island.
+- 50% RULE: Critically important. Improvements exceeding 50% of pre-improvement market value = substantial improvement = must bring entire structure to current BFE + freeboard. Building Official tracks cumulative improvements over 3-year rolling period.
+- PRE-FIRM STRUCTURES: Many island homes are pre-FIRM (built before flood maps). These are grandfathered for flood insurance but trigger full elevation requirements upon substantial improvement.
+- OCRM: Beachfront properties subject to DHEC OCRM jurisdiction. OCRM baseline/setback line governs how close to beach you can build.
+- STRONG RECOMMENDATION: Contact Building Official (843-883-5732) BEFORE purchasing property to understand flood constraints.
+
+## SULLIVAN'S ISLAND TAX CREDITS
+- Properties within Moultrieville or Atlanticville historic districts listed on National Register may qualify for federal 20% historic tax credit.
+- Sullivan's Island Landmark properties are prime candidates.
+- Fort Moultrie-associated structures: Verified National Register contributing resources.
+- Bailey Bill: Verify adoption status with Town — Sullivan's Island is a small municipality.
+- State 10-25% credit available for qualifying properties.
+- Secretary of Interior Standards compliance required — aligns with DRB COA requirements.`,
+
+  decisions: [
+    {board:'DRB',date:'2025',address:'1204 Middle Street (Stella Maris)',outcome:'approved',vote:'N/A',desc:'Removal of non-historic parish hall and construction of new parish hall on Sullivan\'s Island Landmark property. Multiple modifications granted: coverage, square footage, setbacks, facades.',takeaway:'Even landmark properties can get significant modifications approved if design is compatible and well-documented. Come with full streetscape renderings for complex projects.'},
+    {board:'DRB',date:'2024-2025',address:'Various RS lots',outcome:'approved',vote:'N/A',desc:'Multiple new single-family home applications with requests for additional principal building square footage and coverage. Board evaluates each on neighborhood compatibility.',takeaway:'Square footage and coverage modifications are routinely requested and granted when design fits the neighborhood. The compatibility argument is everything.'},
+    {board:'DRB',date:'2024',address:'Fort Moultrie NCO Quarter',outcome:'approved',vote:'N/A',desc:'Historic renovation of Sullivan\'s Island Landmark (1902-1930 era NCO building). Conceptual approved for restoration with additions.',takeaway:'Historic landmark renovations get favorable review when restoration approach follows Secretary of Interior Standards. Pre-application meeting critical.'},
+  ],
+
+  boardFilters: [
+    {label:'All', value:'all'},
+    {label:'DRB', value:'DRB'},
+    {label:'✓ Approved', value:'approved'},
+    {label:'✗ Denied', value:'denied'},
+    {label:'⟳ Deferred', value:'deferred'},
+  ],
+
+  decisionsSource: {
+    label: "Town of Sullivan's Island Design Review Board",
+    url: 'https://sullivansisland.sc.gov/government/boards-commissions/design-review-board'
+  },
+
+  feeSources: [
+    {label:"Sullivan's Island Building Department", url:'https://sullivansisland.sc.gov/departments/building-department'},
+  ],
+  feeSourceNote: "Fees from Town of Sullivan's Island. Contact Building Department at 843-883-5732 for current fee schedule. DRB application fees apply for all projects requiring design review. Working hours: Mon-Fri 8am-6pm, Sat 10am-4pm. No work on Sundays or major holidays.",
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000)  return 15 + Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260 + Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460 + Math.ceil((val-100000)/1000)*3;
+    return 1660 + Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    if(val>0){
+      lines.push({label:'Building Permit Application Fee',amt:30,src:"Sullivan's Island Building Dept."});total+=30;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Building Permit Fee',amt:bp,src:"Sullivan's Island Building Dept."});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee (50% of permit fee)',amt:pr,src:"Sullivan's Island Building Dept."});total+=pr;}
+    }
+    if(boards.bar||boards.drb){lines.push({label:'DRB Application Fee',amt:150,note:'Verify current fee with Town — may vary by project scope',src:"Sullivan's Island DRB"});total+=150;}
+    if(boards.bza){lines.push({label:'Board of Zoning Appeals Application',amt:150,src:"Sullivan's Island BZA"});total+=150;}
+    if(boards.demo){lines.push({label:'Demolition Permit',amt:100,note:'Verify — DRB review required for demolition of structures in historic districts',src:"Sullivan's Island Building Dept."});total+=100;}
+    if(boards.bailey){lines.push({label:'Historic Tax Credit Certification',amt:0,note:'Administered through SC SHPO; federal 20% credit via NPS',src:'SC Dept. of Archives & History / NPS'});}
+    return {lines, total};
+  },
+
+  layerMeta: {
+    'DesignReview': {emoji:'🏛',color:'var(--green-deep)', label:'DRB Design Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ISLE OF PALMS, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+isle_of_palms: {
+  name: 'City of Isle of Palms',
+  state: 'SC',
+  permitCenter: '1207 Palm Boulevard, Isle of Palms, SC 29451',
+  permitPhone: '843-886-9912',
+
+  loadingSteps: [
+    "Identifying zoning district (SR-1, SR-2, LC, GC, PRD)...",
+    "Checking Wild Dunes PRD architectural review requirements...",
+    "Running zoning compliance (lot coverage, FAR, setbacks, height)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating V-zone / AE-zone flood exposure and OCRM setbacks...",
+    "Checking short-term rental licensing requirements...",
+    "Mapping federal & state tax credit eligibility...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: CITY OF ISLE OF PALMS, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### NO CITYWIDE DESIGN REVIEW BOARD.
+Isle of Palms does NOT have a municipal architectural review board or design review board for most of the island. Zoning compliance + building permit = go.
+
+### EXCEPTION: WILD DUNES PRD
+- Wild Dunes is a Planned Residential Development with its own Architectural Review Committee (ARC).
+- ARC reviews all construction within Wild Dunes — new homes, renovations, additions, landscaping.
+- PRIVATE review body, not municipal. Standards set by Wild Dunes Community Association.
+- Max dwelling units in PRD: 2,119 (reduced from 2,449 by Ordinance 2022-12). Max inn units: 297 (reduced from 350).
+- PRD setbacks established by ARC, not standard zoning code.
+
+## LAYER 2: ZONING COMPLIANCE (IOP Municipal Code, Title 5, Chapter 4)
+
+### ZONING DISTRICTS:
+- SR-1 (Single Family Residential): Lot size 17,500+ sqft. Setbacks: 30ft front/rear, 10ft sides. If lot <17,500 sqft: 24ft front/rear, 10ft sides. Height: 40ft.
+- SR-2 (Single Family Residential): Lot size 8,000+ sqft. Setbacks: 20ft front/rear, 7.5ft sides. If lot <8,000 sqft: 15ft front/rear, 5ft sides. Height: 40ft.
+- LC (Limited Commercial): Setbacks: 20ft front/rear, 10ft sides. Height: 40ft.
+- GC-1 (General Commercial): Setbacks: 25ft front, 15ft rear, 10ft sides. Height: 40ft.
+- GC-2 (General Commercial): Structures not more than 200ft from Ocean Blvd ROW. No other setbacks required if complying with fire district standards. Height: 40ft.
+- CR (Conservation-Recreation): Established 2022 for golf courses and open space areas. No development.
+- PRD (Wild Dunes): Setbacks per ARC. Separate development standards.
+
+### UNIVERSAL HEIGHT LIMIT: 40 FEET across all districts. No exceptions. This is lower and simpler than most Charleston County municipalities.
+
+### LOT COVERAGE AND FAR:
+- General rules per Section 5-4-44.
+- Accessory structures count toward coverage.
+- Swimming pools: Check setback requirements specific to IOP code.
+
+### SHORT-TERM RENTALS:
+- Major regulatory issue on IOP. Licensing required.
+- Mandatory placard for each rental property.
+- Accommodations taxes must be collected.
+- Regulations actively being updated — verify current rules.
+
+## ISLE OF PALMS FLOOD & COASTAL CONTEXT
+- Barrier island — virtually ALL properties are in FEMA flood zone (AE or VE).
+- V-ZONE properties (oceanfront): Elevated construction on pilings required. Breakaway walls only below BFE.
+- BFE varies — typically 13-16ft NAVD88 depending on location.
+- 50% Rule applies. Building Official tracks cumulative improvements.
+- OCRM: Beachfront properties subject to DHEC OCRM jurisdiction and setback lines.
+- CRITICAL: Contact Building Department (843-886-9912) BEFORE purchasing property — flood history may limit future improvements.
+- National Flood Insurance Program participant.
+
+## IOP TAX CREDITS
+- No National Register historic districts on Isle of Palms — limited historic tax credit opportunity.
+- Individual properties may be eligible if individually listed (rare on IOP).
+- Bailey Bill: Verify adoption status with City.
+- Primary tax considerations are flood insurance costs and short-term rental tax obligations.`,
+
+  decisions: [
+    {board:'BZA',date:'2024-2025',address:'Various SR-1/SR-2 lots',outcome:'approved',vote:'N/A',desc:'Variance requests for setback reductions and lot coverage exceptions on nonconforming lots. BZA evaluates hardship justification.',takeaway:'IOP BZA is the primary board you may face. Hardship justification required — lot shape, flood zone constraints, and nonconforming status are common arguments.'},
+    {board:'Planning',date:'2022',address:'Wild Dunes PRD',outcome:'approved',vote:'Council',desc:'Ordinance 2022-12 reduced max dwelling units in Wild Dunes PRD from 2,449 to 2,119 and inn units from 350 to 297. Major density reduction.',takeaway:'Wild Dunes development capacity has been significantly reduced by Council action. Factor current entitlement limits into any PRD project.'},
+  ],
+
+  boardFilters: [
+    {label:'All', value:'all'},
+    {label:'BZA', value:'BZA'},
+    {label:'Planning', value:'Planning'},
+    {label:'✓ Approved', value:'approved'},
+  ],
+
+  decisionsSource: {
+    label: 'City of Isle of Palms Building & Planning',
+    url: 'https://www.iop.net/building-planning-and-zoning'
+  },
+
+  feeSources: [
+    {label:'IOP Permit Fee Schedule', url:'https://www.iop.net/sites/default/files/uploads/iop-permit-fee-schedule.pdf'},
+  ],
+  feeSourceNote: 'Fees from City of Isle of Palms Permit Fee Schedule. Building permit: $60 + $6 per $1,000 of construction value. Plan review fee is 50% of building permit fee and is in addition to building permit fee. Verify final amounts at 1207 Palm Boulevard or call 843-886-9912.',
+
+  calcBuildingPermit(val){
+    // IOP: $60 + $6 per $1,000 of construction value
+    if(!val||val<=0) return 0;
+    return 60 + Math.ceil(val/1000)*6;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    if(val>0){
+      const bp=this.calcBuildingPermit(val);
+      lines.push({label:'Building Permit Fee ($60 + $6/thousand)',amt:bp,src:'IOP Permit Fee Schedule'});total+=bp;
+      const pr=Math.round(bp*0.5);
+      lines.push({label:'Plan Review Fee (50% of permit fee)',amt:pr,src:'IOP Permit Fee Schedule'});total+=pr;
+    }
+    if(boards.bza){lines.push({label:'Board of Zoning Appeals Application',amt:200,note:'Verify current fee',src:'IOP BZA'});total+=200;}
+    if(boards.demo){lines.push({label:'Demolition Permit',amt:100,note:'Verify current fee',src:'IOP Building Dept.'});total+=100;}
+    return {lines, total};
+  },
+
+  layerMeta: {
+    'DesignReview': {emoji:'📋',color:'var(--text-dark)', label:'Zoning & Planning Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FOLLY BEACH, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+folly_beach: {
+  name: 'City of Folly Beach',
+  state: 'SC',
+  permitCenter: '21 Center Street, Folly Beach, SC 29439',
+  permitPhone: '843-588-2447',
+
+  loadingSteps: [
+    "Identifying zoning district and flood zone...",
+    "Checking beachfront setback and OCRM jurisdiction...",
+    "Running zoning compliance (height, coverage, setbacks)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating V-zone / AE-zone coastal flood exposure...",
+    "Checking site fill and no adverse impact requirements...",
+    "Mapping tax credit eligibility...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: CITY OF FOLLY BEACH, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### NO FORMAL DESIGN REVIEW BOARD.
+Folly Beach does NOT have an architectural review board or design review board. The Building and Planning Department handles zoning and building code compliance. No aesthetic review process exists — if you meet zoning and code, you get a permit.
+
+### WHAT THE BUILDING DEPARTMENT DOES:
+- Building code compliance (IBC/IRC as adopted by SC)
+- Zoning compliance per Zoning and Development Ordinance (ZDO)
+- Floodplain management (NFIP participation)
+- Code enforcement
+- Tree ordinance enforcement
+
+## LAYER 2: ZONING COMPLIANCE (Folly Beach Zoning and Development Ordinance — ZDO)
+
+### KEY CHARACTERISTICS:
+- Folly Beach is a narrow barrier island — lots are small, many nonconforming.
+- Zoning is primarily residential with a small commercial district on Center Street.
+- Height limits, setbacks, and lot coverage are the primary review criteria.
+- No formal design review means zoning compliance is the ONLY gate before building permit.
+
+### ZONING DISTRICTS (verify current ZDO — updated periodically):
+- Residential districts: Single-family and duplex areas. Most of the island.
+- Commercial district: Center Street commercial corridor. Mixed retail, restaurant, accommodations.
+- Conservation/public: Beach access areas, public parks.
+
+### HEIGHT: Verify current ZDO for specific height limits by district. Typical barrier island limit is 35-40ft.
+### SETBACKS: Verify by district. Beachfront properties have additional OCRM setback requirements.
+### LOT COVERAGE: Impervious coverage limits apply. Critical on small island lots.
+
+## FOLLY BEACH FLOOD & COASTAL CONTEXT — THE DOMINANT ISSUE
+- ENTIRE ISLAND is in FEMA flood zone. Most properties VE or AE.
+- V-ZONE CONSTRUCTION: Pilings required. Breakaway walls only below BFE. No fill in V-zone.
+- BFE: Varies by location — typically 13-16ft NAVD88.
+- 50% RULE: Strictly enforced. Improvements exceeding 50% of pre-improvement value = substantial improvement = full elevation to BFE + freeboard required.
+- SITE FILL: Pre- and post-construction No Adverse Impact Letter required for site fill projects. This is unique to Folly Beach and can add timeline.
+- OCRM: Beachfront properties subject to DHEC OCRM setback line. OCRM jurisdiction extends from mean high water landward.
+- EROSION: Folly Beach has significant erosion issues. Beach renourishment projects ongoing. Factor erosion trends into long-term investment analysis.
+- SHORT-TERM RENTALS: Active regulatory environment. Licensing and accommodation tax requirements.
+
+### PERMIT TIMELINE:
+- Trade permits (no plan review): 4-5 business days.
+- Permits requiring plan review (new construction, large reno): 4-8 WEEKS.
+- All submissions via email to permits@follybeach.gov.
+
+## FOLLY BEACH TAX CREDITS
+- No National Register historic districts on Folly Beach.
+- Limited historic tax credit opportunity — individual property eligibility only.
+- Primary financial considerations: flood insurance costs, elevation costs, erosion risk.
+- FEMA Increased Cost of Compliance (ICC) coverage may help offset elevation costs after flood damage.`,
+
+  decisions: [
+    {board:'BZA',date:'2024-2025',address:'Various Folly Beach lots',outcome:'approved',vote:'N/A',desc:'Variance requests for nonconforming lots — setback reductions and coverage exceptions. Small lot sizes make variances common.',takeaway:'Many Folly Beach lots are nonconforming. BZA variance requests are routine but still require hardship justification. Small lot + V-zone elevation requirements = common justification for reduced setbacks.'},
+  ],
+
+  boardFilters: [
+    {label:'All', value:'all'},
+    {label:'BZA', value:'BZA'},
+    {label:'✓ Approved', value:'approved'},
+    {label:'✗ Denied', value:'denied'},
+  ],
+
+  decisionsSource: {
+    label: 'City of Folly Beach Planning & Zoning',
+    url: 'https://www.cityoffollybeach.com/planning-and-zoning'
+  },
+
+  feeSources: [
+    {label:'Folly Beach Building Department', url:'https://cityoffollybeach.com/building-forms-permits-inspections'},
+  ],
+  feeSourceNote: 'Contact Folly Beach Building Department at 843-588-2447 or permits@follybeach.gov for current fee schedule. Plan review for new construction/large reno: 4-8 weeks processing time. Trade permits: 4-5 business days.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000)  return 15 + Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260 + Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460 + Math.ceil((val-100000)/1000)*3;
+    return 1660 + Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    if(val>0){
+      lines.push({label:'Permit Application Fee',amt:30,note:'Verify current fee',src:'Folly Beach Building Dept.'});total+=30;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Building Permit Fee',amt:bp,src:'Folly Beach Building Dept.'});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee (est. 50% of permit)',amt:pr,src:'Folly Beach Building Dept.'});total+=pr;}
+    }
+    if(boards.bza){lines.push({label:'BZA Variance Application',amt:150,note:'Verify current fee',src:'Folly Beach BZA'});total+=150;}
+    if(boards.demo){lines.push({label:'Demolition Permit',amt:100,note:'Verify current fee',src:'Folly Beach Building Dept.'});total+=100;}
+    return {lines, total};
+  },
+
+  layerMeta: {
+    'DesignReview': {emoji:'📋',color:'var(--text-dark)', label:'Building & Planning Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UNINCORPORATED CHARLESTON COUNTY — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+unincorporated_cc: {
+  name: 'Unincorporated Charleston County',
+  state: 'SC',
+  permitCenter: '4045 Bridge View Drive, North Charleston, SC 29405 (Lonnie Hamilton III Building)',
+  permitPhone: '843-202-7200',
+
+  loadingSteps: [
+    "Identifying zoning district per Charleston County ZLDR...",
+    "Checking Historic Preservation Commission jurisdiction...",
+    "Checking Ashley River Historic District overlay...",
+    "Running zoning compliance (ZLDR setbacks, density, use)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater, DHEC, and flood zone exposure...",
+    "Checking settlement community protections...",
+    "Mapping federal & state tax credit eligibility...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: UNINCORPORATED CHARLESTON COUNTY, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### HISTORIC PRESERVATION COMMISSION (HPC)
+- Charleston County has a Historic Preservation Commission that reviews projects in designated historic areas.
+- Certificate of Historic Appropriateness required for alterations to designated historic properties and properties within designated historic districts.
+- Key designated areas: Ashley River Historic District, settlement communities (Phillips Community, Ten Mile, Beefield, etc.).
+- Site design review is part of the Historic Preservation Ordinance — particularly important for settlement communities where historic land use patterns are character-defining.
+
+### MOST OF UNINCORPORATED COUNTY: NO DESIGN REVIEW.
+- Outside designated historic areas, there is no architectural review board.
+- Zoning permit + building permit = construction.
+- Charleston County Zoning & Planning Department handles all zoning and subdivision matters.
+- Pre-application meetings available and recommended for complex projects: SitePlanReview@CharlestonCounty.org or 843-202-7200.
+
+## LAYER 2: ZONING COMPLIANCE (Charleston County ZLDR — Zoning and Land Development Regulations)
+
+### GOVERNING ORDINANCE:
+- Charleston County Zoning and Land Development Regulations (ZLDR) — adopted November 20, 2001, amended regularly.
+- Applies ONLY to unincorporated areas. If a property has been annexed into a municipality, that municipality's ordinance applies.
+- ZLDR is available at: https://online.encodeplus.com/regs/charlestoncounty-sc/doc-viewer.aspx
+
+### KEY ZONING DISTRICTS:
+- AG (Agricultural): Large lot rural. Farming, forestry, single-family.
+- RSL (Residential Single-Family Low Density): Large suburban lots.
+- RSM (Residential Single-Family Medium): Standard suburban.
+- RM (Residential Multi-Family): Apartments, condos, townhouses.
+- CO (Commercial Office): Professional offices.
+- CG (Commercial General): Retail, services, restaurants.
+- LI (Light Industrial): Warehousing, light manufacturing.
+- PD (Planned Development): Master-planned communities with flexible standards.
+
+### SITE PLAN REVIEW:
+- Required for most non-residential and multi-family development.
+- Contact SitePlanReview@CharlestonCounty.org for pre-application meeting.
+- Process per ZLDR Art. 3.7.
+
+### ZONING PERMITS:
+- Required for building permits, business licenses, excavation, grading, fill, tree removal, changes in use, sign installation, construction.
+- Per ZLDR Sec. 3.8.1.
+
+### SUBDIVISION REVIEW:
+- Major subdivisions require Planning Commission review.
+- Contact Subdivision@CharlestonCounty.org for pre-application meeting.
+- Process per ZLDR Chapter 8.
+
+### TREE PROTECTION:
+- Charleston County has tree protection ordinance within ZLDR.
+- Tree removal requires zoning permit. Grand trees (24"+ DBH) have additional protections.
+- Recent controversy over amendments allowing County Public Works to remove grand trees for road projects.
+
+### ASHLEY RIVER HISTORIC DISTRICT OVERLAY:
+- Ashley River Road (Highway 61) is a National Scenic Byway.
+- Overlay divided into AR-I, AR-II, AR-III sub-districts.
+- AR-I protects viewsheds from historic plantations (Drayton Hall, Magnolia, Middleton Place).
+- AR-II and AR-III primarily protect natural resources and aesthetics.
+- Additional setbacks and design considerations within overlay.
+
+## UNINCORPORATED CC FLOOD & STORMWATER
+- Varied flood exposure — ranges from no flood zone (higher ground) to Zone AE/VE (coastal and riverine areas).
+- Charleston County has its own stormwater ordinance.
+- Environmental Management regulations enforced by Zoning & Planning Department.
+- Projects near tidewater: DHEC OCRM may apply.
+- Settlement communities often in flood-prone areas — 50% rule particularly impactful.
+
+## UNINCORPORATED CC TAX CREDITS
+- Ashley River Historic District: Properties may qualify for federal 20% historic tax credit if contributing to listed district.
+- Historic plantations (Drayton Hall, etc.): Individually listed — qualified rehab eligible.
+- Settlement communities: Some have historic significance but National Register status varies.
+- Bailey Bill: Charleston County has adopted Bailey Bill provisions for unincorporated areas — verify current status.
+- Standard SC state credit stacking applies.`,
+
+  decisions: [
+    {board:'HPC',date:'2024-2025',address:'Ashley River corridor',outcome:'approved',vote:'N/A',desc:'Certificate of Historic Appropriateness requests within Ashley River Historic District. Commission reviews for compatibility with scenic byway character.',takeaway:'Projects visible from Ashley River Road face HPC review. Viewshed protection from historic plantations is the primary concern. Maintain tree canopy and appropriate setbacks.'},
+    {board:'Planning Commission',date:'2024-2025',address:'Various unincorporated areas',outcome:'approved',vote:'N/A',desc:'Major subdivision and planned development applications reviewed by Planning Commission. Pre-application meetings conducted.',takeaway:'Pre-application meeting with County staff is the most important step for major projects. Contact SitePlanReview@CharlestonCounty.org early in the process.'},
+  ],
+
+  boardFilters: [
+    {label:'All', value:'all'},
+    {label:'HPC', value:'HPC'},
+    {label:'Planning Commission', value:'Planning Commission'},
+    {label:'✓ Approved', value:'approved'},
+    {label:'✗ Denied', value:'denied'},
+  ],
+
+  decisionsSource: {
+    label: 'Charleston County Zoning & Planning Department',
+    url: 'https://www.charlestoncounty.org/departments/zoning-planning/'
+  },
+
+  feeSources: [
+    {label:'Charleston County Building Inspection Services — Permit Fees', url:'https://www.charlestoncounty.org/departments/building-inspection-services/permit-fees.php'},
+  ],
+  feeSourceNote: 'Fees from Charleston County Building Inspection Services. Modular construction fees based on construction valuations per SC Modular Construction Act. Verify final amounts at 4045 Bridge View Drive or call 843-202-7200.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000)  return 15 + Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260 + Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460 + Math.ceil((val-100000)/1000)*3;
+    return 1660 + Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];
+    let total=0;
+    if(val>0){
+      lines.push({label:'Permit Application Fee',amt:30,src:'Charleston County BIS'});total+=30;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Building Permit Fee',amt:bp,src:'Charleston County BIS Fee Schedule'});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee (50% of permit)',amt:pr,src:'Charleston County BIS'});total+=pr;}
+    }
+    if(boards.bza){lines.push({label:'Board of Zoning Appeals Application',amt:200,note:'Verify current fee',src:'Charleston County Zoning & Planning'});total+=200;}
+    if(boards.demo){
+      const dp=this.calcBuildingPermit(val||sqft*50||5000);
+      lines.push({label:'Demolition Permit Fee',amt:dp>0?dp:30,src:'Charleston County BIS'});total+=(dp>0?dp:30);
+    }
+    if(boards.landmark){lines.push({label:'Historic Preservation Commission Application',amt:100,note:'Verify current fee — Certificate of Historic Appropriateness',src:'Charleston County Zoning & Planning'});total+=100;}
+    if(boards.bailey){
+      lines.push({label:'Zoning Verification (Bailey Bill prerequisite)',amt:30,note:'Verify current fee',src:'Charleston County Zoning & Planning'});total+=30;
+      lines.push({label:'SC State Historic Tax Credit Certification',amt:0,note:'No state fee — administered through SHPO',src:'SC SHPO'});
+    }
+    return {lines, total};
+  },
+
+  layerMeta: {
+    'DesignReview': {emoji:'📋',color:'var(--text-dark)', label:'HPC / Planning Review'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  }
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TOWN OF JAMES ISLAND, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+james_island: {
+  name: 'Town of James Island',
+  state: 'SC',
+  permitCenter: 'Town Hall, 1122 Dills Bluff Road, James Island, SC 29412 (Building permits via Charleston County BIS)',
+  permitPhone: '843-795-4141',
+
+  loadingSteps: [
+    "Identifying zoning district per James Island ZLDR...",
+    "Checking site plan review requirements...",
+    "Running zoning compliance (setbacks, density, coverage, buffers)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater and flood zone exposure...",
+    "Checking tree protection and landscaping requirements...",
+    "Mapping tax credit eligibility...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: TOWN OF JAMES ISLAND, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### NO DESIGN REVIEW BOARD.
+Town of James Island has NO architectural review board or design review board. No aesthetic review process exists.
+
+### WHAT DOES EXIST:
+- Planning Director reviews commercial development for ZLDR compliance: signs, tree surveys, site plans, buffering, site improvements.
+- Planning Commission (5 members, meets 2nd Thursday at 5pm at Town Hall) reviews rezoning, comprehensive plan amendments, and subdivision plats.
+- Board of Zoning Appeals handles variances and special exceptions.
+- Zoning/Livability Code Enforcement ensures ordinance compliance.
+
+### UNIQUE STRUCTURE:
+- Town handles ZONING permits and enforcement.
+- Charleston County Building Inspection Services (BIS) handles BUILDING PERMITS. You need a Town of James Island zoning permit BEFORE applying for a County building permit.
+- Two-step process: (1) James Island zoning approval → (2) Charleston County BIS building permit.
+
+## LAYER 2: ZONING COMPLIANCE (James Island ZLDR, Chapter 153)
+
+### KEY ZONING DISTRICTS:
+- RSL (Residential Single-Family Low): Large lot, low density.
+- RSM (Residential Single-Family Medium): Standard suburban residential.
+- RM (Residential Multi-Family): Apartments, townhouses, condos.
+- CO (Commercial Office): Professional offices.
+- CG (Commercial General): Retail, services, restaurants.
+- LI (Light Industrial): Limited industrial uses.
+- James Island also has PD (Planned Development) districts.
+
+### SETBACKS:
+- Per ZLDR § 153.066 — setbacks defined as unobstructed open area between furthermost projection of structure and property line.
+- Nonconforming lots may be used per §§ 153.355-153.361.
+- In absence of public water or sewer, lot must meet DHEC requirements before permit.
+
+### LANDSCAPING & BUFFERS:
+- Landscape buffers required between incompatible uses (commercial/industrial adjacent to residential).
+- Tree protection ordinance — grand tree removal requires permit.
+- Site plan review required for commercial development.
+
+### STORMWATER:
+- Town Public Works handles stormwater management.
+- Land disturbance permit required.
+- Sediment and erosion control measures required during construction.
+- Projects >1/2 acre but <1 acre disturbance: additional requirements.
+- Projects >1 acre: NPDES Construction General Permit from DHEC required.
+- Charleston County stormwater rules may also apply.
+
+## JAMES ISLAND FLOOD CONTEXT
+- Portions of James Island are in FEMA Zone AE, particularly near Stono River, Wappoo Creek, and interior drainage areas.
+- 50% Rule applies per standard FEMA/NFIP requirements.
+- Elevation certificate required for new construction in flood zones.
+- DFE/Slab/First Floor elevations must be shown on building plans.
+
+## JAMES ISLAND TAX CREDITS
+- No National Register historic districts within the Town of James Island.
+- Individual properties may qualify if independently listed (uncommon).
+- Limited historic tax credit opportunity compared to Charleston or North Charleston.
+- Bailey Bill: Verify adoption status with Town.
+- Primary tax considerations are standard property tax and any special district assessments.`,
+
+  decisions: [
+    {board:'Planning Commission',date:'2024-2025',address:'Various James Island locations',outcome:'approved',vote:'N/A',desc:'Subdivision plats and rezoning requests reviewed by Planning Commission. Standard commercial site plan review by Planning Director.',takeaway:'James Island permitting is straightforward — get zoning approval from Town first, then apply for building permit through Charleston County BIS portal.'},
+  ],
+
+  boardFilters: [{label:'All', value:'all'},{label:'Planning Commission', value:'Planning Commission'},{label:'BZA', value:'BZA'},{label:'✓ Approved', value:'approved'}],
+  decisionsSource: {label: 'Town of James Island Planning & Zoning', url: 'https://www.jamesislandsc.us/planning-and-zoning'},
+  feeSources: [{label:'James Island Forms & Information', url:'https://www.jamesislandsc.us/forms-and-information'},{label:'Charleston County BIS Permit Fees', url:'https://www.charlestoncounty.org/departments/building-inspection-services/permit-fees.php'}],
+  feeSourceNote: 'James Island zoning permits issued by Town. Building permits issued through Charleston County BIS portal — you need a James Island zoning permit first. Building permit fees follow Charleston County BIS fee schedule. Contact Town Hall at 843-795-4141 for zoning fee information.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000) return 15+Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260+Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460+Math.ceil((val-100000)/1000)*3;
+    return 1660+Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];let total=0;
+    lines.push({label:'James Island Zoning Permit Fee',amt:50,note:'Verify current fee with Town',src:'Town of James Island'});total+=50;
+    if(val>0){
+      lines.push({label:'Charleston County BIS Application Fee',amt:30,src:'Charleston County BIS'});total+=30;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Building Permit Fee (Charleston County BIS)',amt:bp,src:'Charleston County BIS Fee Schedule'});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee (50% of permit)',amt:pr,src:'Charleston County BIS'});total+=pr;}
+    }
+    if(boards.bza){lines.push({label:'Board of Zoning Appeals Application',amt:150,note:'Verify current fee',src:'Town of James Island'});total+=150;}
+    if(boards.demo){const dp=this.calcBuildingPermit(val||sqft*50||5000);if(dp>0){lines.push({label:'Demolition Permit (County BIS)',amt:dp,src:'Charleston County BIS'});total+=dp;}}
+    return {lines, total};
+  },
+
+  layerMeta: {'DesignReview':{emoji:'📋',color:'var(--text-dark)',label:'Planning & Zoning Review'},'Zoning':{emoji:'📐',color:'var(--blue)'},'Building':{emoji:'🔩',color:'var(--text-dark)'},'Stormwater':{emoji:'🌊',color:'#2D5A8A'},'TaxCredits':{emoji:'💰',color:'var(--gold)'}}
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KIAWAH ISLAND, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+kiawah: {
+  name: 'Town of Kiawah Island',
+  state: 'SC',
+  permitCenter: 'ARB: 130 Gardeners Circle, Suite 123, Johns Island, SC 29455 | Town: 4475 Betsy Kerrison Pkwy, Kiawah Island, SC 29455',
+  permitPhone: '843-768-3419 (ARB) | 843-768-9166 (Town)',
+
+  loadingSteps: [
+    "Checking ARB jurisdiction and neighborhood-specific guidelines...",
+    "Reviewing 'Designing with Nature' compatibility standards...",
+    "Analyzing site conditions, vegetation, and environmental sensitivity...",
+    "Running Town zoning compliance and Development Agreement review...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating V-zone / AE-zone flood and OCRM setback exposure...",
+    "Reviewing ARB color palette and material requirements...",
+    "Mapping tax credit eligibility...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: TOWN OF KIAWAH ISLAND, SC
+
+## LAYER 1: ARCHITECTURAL REVIEW BOARD (ARB)
+
+### CRITICAL: Kiawah has the STRICTEST design review in Charleston County.
+- The ARB is a PRIVATE entity controlled by the developer (Kiawah Development Partners / South Street Partners). It is NOT a municipal board.
+- ARB approval AND a Kiawah Island building permit are BOTH required before ANY construction.
+- The Town of Kiawah Island has a SEPARATE municipal site plan review process. Both entities must approve independently.
+- ARB reviews ALL exterior changes — new construction, renovations, additions, painting, landscaping, tree removal, boardwalks, docks, pools.
+- "Designing with Nature" is the ARB's comprehensive guideline document. Understand it before submitting anything.
+
+### ARB REVIEW PROCESS FOR NEW HOMES:
+1. SITE ANALYSIS: First step — meet with ARB Landscape Coordinator to assess vegetation, topography, and environmental constraints.
+2. CONCEPTUAL REVIEW: Board reviews overall design approach, massing, siting.
+3. PRELIMINARY REVIEW: Detailed plans, materials, colors, landscape concept.
+4. FINAL REVIEW: Construction documents, final color/material selections, landscape plan.
+5. PERMIT: Once Final approved, address any outstanding concerns → submit for building permit.
+- ALLOW 6 MONTHS for the ARB review process. Factor this into construction schedule and carry costs.
+- ARB meets regularly — check schedule. Digital submissions accepted.
+
+### ARB DESIGN PHILOSOPHY:
+- ENVIRONMENTAL SENSITIVITY: Homes must blend with natural setting. Colors harmonize with maritime forest — earth tones, muted greens, weathered wood tones. No bright or attention-seeking colors.
+- VEGETATION PRESERVATION: Tree and vegetation removal strictly controlled. Removal requires ARB Landscape Coordinator approval. Fines for unauthorized removal. Mitigation may be required.
+- LOWCOUNTRY CLIMATE: Designs should take advantage of prevailing breezes, provide cross ventilation, address warm climate.
+- LOT COVERAGE: Calculated based on "highland" area (all area above mean high water). Standard is 33% for beachfront properties.
+- NEIGHBORHOOD GUIDELINES: Many Kiawah neighborhoods have ADDITIONAL covenant-specific guidelines beyond the general "Designing with Nature" standards. Check your specific neighborhood.
+
+### ARB CONTACTS:
+- Mailing: 130 Gardeners Circle, Suite 123, Johns Island, SC 29455
+- Phone: 843-768-3419 | Email: ARB@Kiawah.com
+- Hours: Mon-Fri 8:30am-5:00pm, by appointment only
+- Online permitting portal: citizenserve.com
+
+### TOWN OF KIAWAH ISLAND (Municipal):
+- Separate from ARB. Town handles municipal zoning, site plan review for commercial development, and land use regulation.
+- Planning Manager reviews commercial site plans for zoning/land use compliance and Development Agreement consistency.
+- Town uses outside professionals (traffic engineers, land use attorneys) for complex reviews.
+- Development Agreement governs overall island development — density, infrastructure, traffic thresholds.
+- Developers on Kiawah: South Street Partners (Kiawah Partners, Kiawah Island Real Estate, Kiawah Island Club) and Riverstone Group (Kiawah Island Golf Resort, Andell West).
+
+## LAYER 2: ZONING COMPLIANCE
+- Town of Kiawah Island zoning governs land use within town limits.
+- Development Agreement with Kiawah Development Partners sets overarching entitlement framework.
+- Andell West (300 acres) is in unincorporated Charleston County, NOT the Town — different rules apply.
+- Captain Sam's Spit: Environmentally sensitive area with ongoing regulatory and legal considerations.
+
+## KIAWAH FLOOD & COASTAL CONTEXT
+- Barrier island — ALL properties in FEMA flood zone (AE or VE).
+- V-zone properties (beachfront): Elevated construction on pilings. Breakaway walls below BFE.
+- OCRM: Beachfront properties subject to OCRM interim setback line and primary dune line. All construction must be landward of both.
+- OCRM Storm Water Management Act compliance required for all properties.
+- Hurricane exposure: Significant. Factor wind mitigation and insurance costs into pro forma.
+
+## KIAWAH TAX CREDITS
+- Limited historic tax credit opportunity — Kiawah is primarily late 20th century residential development.
+- No National Register historic districts (the island's development is post-1970s).
+- Individual structures unlikely to qualify for federal/state historic credits.
+- Primary financial considerations: ARB compliance costs (6+ month timeline), flood insurance, OCRM constraints, and very high property values.
+- Bailey Bill: Not applicable in practice — no historic designation typical for Kiawah properties.`,
+
+  decisions: [
+    {board:'ARB',date:'2024-2025',address:'Various Kiawah lots',outcome:'approved',vote:'N/A',desc:'New home construction through full 4-phase ARB review. Environmental sensitivity, color palette, and vegetation preservation are primary review criteria.',takeaway:'Allow 6 months for ARB process. Pre-site analysis with Landscape Coordinator is mandatory first step. Engage architect familiar with Kiawah ARB standards.'},
+    {board:'ARB',date:'2025',address:'The Cape (beachfront)',outcome:'approved',vote:'N/A',desc:'Major beachfront development by East West Partners / Kiawah Partners. Lot coverage calculation based on highland definition generated public debate.',takeaway:'Beachfront development on Kiawah faces intense scrutiny from both ARB and community. Lot coverage calculation methodology is contested — confirm highland definition with ARB before design.'},
+  ],
+
+  boardFilters: [{label:'All', value:'all'},{label:'ARB', value:'ARB'},{label:'Town', value:'Town'},{label:'✓ Approved', value:'approved'}],
+  decisionsSource: {label: 'Kiawah Island Architectural Review Board', url: 'https://arb.kiawahisland.com/'},
+  feeSources: [{label:'Kiawah ARB Forms & Fees', url:'https://arb.kiawahisland.com/kiawah-arb-forms/'},{label:'Town of Kiawah Island', url:'https://kiawahisland.org/government/departments/community_development/development_resources.php'}],
+  feeSourceNote: 'ARB review fees and construction deposits required for all projects. Fees vary by project scope — contact ARB at 843-768-3419 or ARB@Kiawah.com. Maintenance permits available online. New home review requires permit fee + refundable construction deposit. Town building permit fees are separate from ARB fees.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000) return 15+Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260+Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460+Math.ceil((val-100000)/1000)*3;
+    return 1660+Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];let total=0;
+    lines.push({label:'ARB Review Fee',amt:500,note:'Varies significantly by project scope — verify with ARB. New homes require permit fee + refundable construction deposit',src:'Kiawah ARB'});total+=500;
+    lines.push({label:'ARB Refundable Construction Deposit',amt:2500,note:'Estimate — actual deposit varies. Refunded after final ARB inspection of completed work',src:'Kiawah ARB'});total+=2500;
+    if(val>0){
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Town Building Permit Fee',amt:bp,src:'Town of Kiawah Island'});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee',amt:pr,src:'Town of Kiawah Island'});total+=pr;}
+    }
+    if(boards.demo){lines.push({label:'Demolition Application & Deposit',amt:500,note:'ARB demolition review required. Deposit required.',src:'Kiawah ARB'});total+=500;}
+    return {lines, total};
+  },
+
+  layerMeta: {'DesignReview':{emoji:'🏛',color:'var(--green-deep)',label:'ARB Architectural Review'},'Zoning':{emoji:'📐',color:'var(--blue)'},'Building':{emoji:'🔩',color:'var(--text-dark)'},'Stormwater':{emoji:'🌊',color:'#2D5A8A'},'TaxCredits':{emoji:'💰',color:'var(--gold)'}}
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TOWN OF SUMMERVILLE, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+summerville: {
+  name: 'Town of Summerville',
+  state: 'SC',
+  permitCenter: '200 S Main Street, Summerville, SC 29483',
+  permitPhone: '843-851-4100',
+
+  loadingSteps: [
+    "Identifying zoning district and historic overlay...",
+    "Checking Summerville Historic District DRB requirements...",
+    "Running zoning compliance (setbacks, height, density)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater and flood exposure...",
+    "Mapping federal & state historic tax credit eligibility...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: TOWN OF SUMMERVILLE, SC
+
+### IMPORTANT NOTE ON COUNTY OVERLAP:
+Summerville spans THREE counties: Dorchester County (primary), Charleston County, and Berkeley County. The Town's zoning ordinance applies within town limits regardless of county. But building permits and county-level requirements depend on which county the parcel is in. Verify county before applying for building permits.
+
+## LAYER 1: DESIGN REVIEW
+
+### SUMMERVILLE HISTORIC DISTRICT:
+- Summerville has a local historic district centered on the downtown area along Main Street and surrounding blocks.
+- The Town's Board of Architectural Review / Design Review Board reviews exterior changes to properties within the historic district.
+- Certificate of Appropriateness may be required for alterations visible from public right-of-way.
+- Historic district focus: Antebellum and Victorian-era architecture. "Flowertown in the Pines" — large lot character with significant tree canopy.
+
+### OUTSIDE HISTORIC DISTRICT:
+- No formal design review for most of Summerville outside the historic district.
+- Zoning compliance + building permit = construction.
+- Commercial design standards may apply per Town zoning ordinance.
+
+## LAYER 2: ZONING COMPLIANCE (Town of Summerville Zoning Ordinance)
+
+### KEY CHARACTERISTICS:
+- Summerville is one of the fastest-growing municipalities in the Charleston metro area.
+- Significant new residential subdivision development (Nexton, Summers Corner nearby).
+- Mixed zoning: historic small-town core + large-scale suburban development on periphery.
+- Town comprehensive plan guides growth management.
+
+### BUILDING PERMITS:
+- Depending on which county the parcel is in:
+  - Dorchester County: Dorchester County Building Inspection handles permits. Contact 843-563-0020.
+  - Charleston County portion: Charleston County BIS handles permits.
+  - Berkeley County portion: Berkeley County Building Department handles permits.
+- Town zoning approval needed before county building permit in all cases.
+
+## SUMMERVILLE FLOOD & STORMWATER
+- Flood exposure varies — some areas along Sawmill Branch and other waterways are in FEMA Zone AE.
+- Generally LESS flood exposure than coastal Charleston County municipalities.
+- Standard 50% Rule applies in flood zones.
+- Town and county stormwater requirements both may apply.
+
+## SUMMERVILLE TAX CREDITS
+- Summerville Historic District: Properties within may qualify for federal 20% historic tax credit if contributing to a listed National Register district.
+- State 10-25% credit available for qualifying properties.
+- Bailey Bill: Verify adoption status — Summerville spans multiple counties which complicates administration.
+- Downtown revitalization incentives may be available through Town economic development office.`,
+
+  decisions: [
+    {board:'DRB',date:'2024-2025',address:'Downtown Summerville / Main Street',outcome:'approved',vote:'N/A',desc:'Renovation and new construction within historic district reviewed by Town DRB for compatibility with Victorian-era streetscape character.',takeaway:'Downtown Summerville historic district projects need DRB approval. Focus on compatibility with existing Victorian/Antebellum character. Maintain tree canopy.'},
+  ],
+
+  boardFilters: [{label:'All', value:'all'},{label:'DRB', value:'DRB'},{label:'BZA', value:'BZA'},{label:'✓ Approved', value:'approved'}],
+  decisionsSource: {label: 'Town of Summerville Planning & Zoning', url: 'https://www.summervillesc.gov'},
+  feeSources: [{label:'Town of Summerville Building Department', url:'https://www.summervillesc.gov'}],
+  feeSourceNote: 'Building permit fees depend on which county the parcel is in (Dorchester, Charleston, or Berkeley). Town zoning fees are separate. Contact Town Hall at 843-851-4100 for zoning fees. Contact appropriate county building department for building permit fees.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000) return 15+Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260+Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460+Math.ceil((val-100000)/1000)*3;
+    return 1660+Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];let total=0;
+    lines.push({label:'Town Zoning Permit Fee',amt:50,note:'Verify current fee with Town',src:'Town of Summerville'});total+=50;
+    if(val>0){
+      lines.push({label:'County Building Permit Application Fee',amt:30,note:'County depends on parcel location (Dorchester/Charleston/Berkeley)',src:'County Building Dept.'});total+=30;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Building Permit Fee (est. — varies by county)',amt:bp,src:'County Building Dept.'});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee (est. 50%)',amt:pr,src:'County Building Dept.'});total+=pr;}
+    }
+    if(boards.bar||boards.drb){lines.push({label:'Historic District DRB Application',amt:100,note:'Verify — only applies within Summerville Historic District',src:'Town of Summerville'});total+=100;}
+    if(boards.bza){lines.push({label:'BZA Variance Application',amt:200,note:'Verify current fee',src:'Town of Summerville'});total+=200;}
+    return {lines, total};
+  },
+
+  layerMeta: {'DesignReview':{emoji:'🏛',color:'var(--green-deep)',label:'Historic District DRB'},'Zoning':{emoji:'📐',color:'var(--blue)'},'Building':{emoji:'🔩',color:'var(--text-dark)'},'Stormwater':{emoji:'🌊',color:'#2D5A8A'},'TaxCredits':{emoji:'💰',color:'var(--gold)'}}
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CITY OF GOOSE CREEK, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+goose_creek: {
+  name: 'City of Goose Creek',
+  state: 'SC',
+  permitCenter: '519 N Goose Creek Blvd, Goose Creek, SC 29445',
+  permitPhone: '843-797-6220',
+
+  loadingSteps: [
+    "Identifying zoning district per Goose Creek Zoning Ordinance...",
+    "Checking commercial design standards applicability...",
+    "Running zoning compliance (setbacks, density, coverage)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating stormwater and flood zone exposure...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: CITY OF GOOSE CREEK, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### NO FORMAL DESIGN REVIEW BOARD.
+Goose Creek does NOT have an architectural review board. No aesthetic review for residential construction.
+
+### COMMERCIAL DESIGN STANDARDS:
+- Section Nine of the Zoning Ordinance: "Form, Design & Operational Standards" applies to general commercial properties.
+- These are code-based standards (setbacks, building orientation, landscaping, signage), not subjective board review.
+- Verify with Planning & Zoning Department which design standards apply for your specific project.
+
+### PLANNING & ZONING:
+- Part of "Creek Compass" — the city's development partner program.
+- Planning Commission reviews rezonings, comprehensive plan amendments, and major subdivisions.
+- Board of Zoning Appeals handles variances and special exceptions.
+
+## LAYER 2: ZONING COMPLIANCE (Goose Creek Code of Ordinances, Chapter 151)
+
+### KEY CHARACTERISTICS:
+- Goose Creek is primarily suburban residential and commercial.
+- Located in Berkeley and Dorchester Counties — building permits may go through either county depending on parcel location.
+- Significant military-connected population (Joint Base Charleston proximity).
+- Growth corridor along US-176 and US-52.
+
+### ZONING DISTRICTS:
+- Residential districts: Single-family through multi-family.
+- Commercial: Neighborhood, general, and highway commercial.
+- Industrial: Light and heavy industrial.
+- PD: Planned Development districts for master-planned communities.
+
+### BUILDING PERMITS:
+- Goose Creek uses ICC Building Valuation Data (BVD) to determine permit fees — this is DIFFERENT from the standard Charleston County valuation-based table.
+- Online permitting portal available via Creek Compass.
+
+## GOOSE CREEK FLOOD & STORMWATER
+- Mixed flood exposure. Properties along Back River and tributaries may be in FEMA Zone AE.
+- Generally LESS flood exposure than coastal municipalities.
+- Standard 50% Rule applies.
+
+## GOOSE CREEK TAX CREDITS
+- No National Register historic districts within Goose Creek.
+- Very limited historic tax credit opportunity.
+- Primary value of the pre-flight: zoning compliance, building code, and flood zone analysis.`,
+
+  decisions: [
+    {board:'Planning',date:'2024-2025',address:'Various Goose Creek locations',outcome:'approved',vote:'N/A',desc:'Commercial and residential development reviewed for zoning compliance and land development regulation adherence.',takeaway:'Goose Creek is straightforward — zoning compliance is the primary gate. Commercial projects check Section 9 design standards. Use Creek Compass portal for permit applications.'},
+  ],
+
+  boardFilters: [{label:'All', value:'all'},{label:'Planning', value:'Planning'},{label:'BZA', value:'BZA'},{label:'✓ Approved', value:'approved'}],
+  decisionsSource: {label: 'City of Goose Creek Planning & Zoning', url: 'https://www.goosecreeksc.gov/government/departments/planning-and-zoning-0'},
+  feeSources: [{label:'Goose Creek Building Permits (ICC BVD)', url:'https://www.goosecreeksc.gov/government/departments/administration/building-permits'}],
+  feeSourceNote: 'Goose Creek uses ICC Building Valuation Data (BVD) to calculate permit fees — this differs from the standard Charleston County fee table. Contact Building Department at 843-797-6220 for current fee calculation. Online portal available via Creek Compass.',
+
+  calcBuildingPermit(val){
+    // Goose Creek uses ICC BVD — these are approximations. Actual fees based on ICC tables.
+    if(!val||val<=1000) return 0;
+    if(val<=50000) return 15+Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260+Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460+Math.ceil((val-100000)/1000)*3;
+    return 1660+Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];let total=0;
+    if(val>0){
+      lines.push({label:'Building Permit Fee (est. — Goose Creek uses ICC BVD)',amt:this.calcBuildingPermit(val),note:'Actual fee calculated from ICC Building Valuation Data — verify with Building Dept.',src:'City of Goose Creek'});total+=this.calcBuildingPermit(val);
+      const pr=Math.round(this.calcBuildingPermit(val)*0.5);
+      lines.push({label:'Plan Review Fee (est. 50%)',amt:pr,src:'City of Goose Creek'});total+=pr;
+    }
+    if(boards.bza){lines.push({label:'BZA Application',amt:150,note:'Verify current fee',src:'City of Goose Creek'});total+=150;}
+    return {lines, total};
+  },
+
+  layerMeta: {'DesignReview':{emoji:'📋',color:'var(--text-dark)',label:'Planning & Zoning Review'},'Zoning':{emoji:'📐',color:'var(--blue)'},'Building':{emoji:'🔩',color:'var(--text-dark)'},'Stormwater':{emoji:'🌊',color:'#2D5A8A'},'TaxCredits':{emoji:'💰',color:'var(--gold)'}}
+},
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CITY OF HANAHAN, SC — Jurisdiction Module
+// ═══════════════════════════════════════════════════════════════════════════════
+hanahan: {
+  name: 'City of Hanahan',
+  state: 'SC',
+  permitCenter: '1255 Yeamans Hall Road, Hanahan, SC 29410',
+  permitPhone: '843-576-3200',
+
+  loadingSteps: [
+    "Identifying zoning district per Hanahan Zoning & Land Ordinance...",
+    "Running zoning compliance (setbacks, density, use)...",
+    "Checking Building & Safety requirements (IBC/IRC)...",
+    "Evaluating flood zone exposure...",
+    "Compiling consolidated pre-flight report..."
+  ],
+
+  prompt: `## JURISDICTION: CITY OF HANAHAN, SC
+
+## LAYER 1: DESIGN REVIEW
+
+### NO DESIGN REVIEW BOARD.
+Hanahan has NO architectural review board, no design review board, and no historic preservation commission. This is the simplest permitting environment in Charleston County for design review purposes.
+
+### WHAT EXISTS:
+- Planning Department handles business licenses and zoning enforcement.
+- Standard zoning compliance review before building permit.
+- Board of Zoning Appeals for variances.
+- Building permits handled by City.
+
+## LAYER 2: ZONING COMPLIANCE (Hanahan Zoning and Land Ordinance)
+
+### KEY CHARACTERISTICS:
+- Small city (~25,000 pop) adjacent to North Charleston and Joint Base Charleston.
+- Primarily residential with commercial corridors along Yeamans Hall Road and Rivers Avenue.
+- Yeamans Hall Club (private golf/residential) is a notable feature.
+- Limited new development compared to faster-growing Charleston County municipalities.
+- Code of Ordinances and Zoning & Land Ordinance available online via Municode.
+
+### ZONING DISTRICTS:
+- Standard residential, commercial, and industrial districts.
+- No special overlay districts or historic districts requiring additional review.
+
+## HANAHAN FLOOD & STORMWATER
+- Mixed flood exposure. Properties near Turkey Creek and tributaries may be in FEMA Zone AE.
+- Generally moderate flood risk compared to coastal municipalities.
+- Standard NFIP 50% Rule applies.
+
+## HANAHAN TAX CREDITS
+- No National Register historic districts within Hanahan.
+- No meaningful historic tax credit opportunity.
+- Straightforward permitting environment — zoning + building code compliance = permit.`,
+
+  decisions: [
+    {board:'Planning',date:'2024-2025',address:'Various Hanahan locations',outcome:'approved',vote:'N/A',desc:'Standard zoning compliance reviews and building permit issuance. No design review process.',takeaway:'Hanahan is the simplest jurisdiction in Charleston County. Get zoning approval, pull building permit, build. No aesthetic review hurdles.'},
+  ],
+
+  boardFilters: [{label:'All', value:'all'},{label:'BZA', value:'BZA'},{label:'✓ Approved', value:'approved'}],
+  decisionsSource: {label: 'City of Hanahan Planning Department', url: 'https://www.cityofhanahan.com/building-codes/page/city-ordinances'},
+  feeSources: [{label:'City of Hanahan Building Department', url:'https://www.cityofhanahan.com'}],
+  feeSourceNote: 'Contact City of Hanahan at 843-576-3200 for current building permit fee schedule. Planning Department at 1255 Yeamans Hall Road.',
+
+  calcBuildingPermit(val){
+    if(!val||val<=1000) return 0;
+    if(val<=50000) return 15+Math.ceil((val-1000)/1000)*5;
+    if(val<=100000) return 260+Math.ceil((val-50000)/1000)*4;
+    if(val<=500000) return 460+Math.ceil((val-100000)/1000)*3;
+    return 1660+Math.ceil((val-500000)/1000)*2;
+  },
+
+  calcFees(type, val, sqft, boards){
+    const lines=[];let total=0;
+    if(val>0){
+      lines.push({label:'Permit Application Fee',amt:30,note:'Verify current fee',src:'City of Hanahan'});total+=30;
+      const bp=this.calcBuildingPermit(val);
+      if(bp>0){lines.push({label:'Building Permit Fee',amt:bp,note:'Verify — fee schedule may differ',src:'City of Hanahan'});total+=bp;
+        const pr=Math.round(bp*0.5);lines.push({label:'Plan Review Fee (est. 50%)',amt:pr,src:'City of Hanahan'});total+=pr;}
+    }
+    if(boards.bza){lines.push({label:'BZA Application',amt:100,note:'Verify current fee',src:'City of Hanahan'});total+=100;}
+    return {lines, total};
+  },
+
+  layerMeta: {'DesignReview':{emoji:'📋',color:'var(--text-dark)',label:'Zoning Review'},'Zoning':{emoji:'📐',color:'var(--blue)'},'Building':{emoji:'🔩',color:'var(--text-dark)'},'Stormwater':{emoji:'🌊',color:'#2D5A8A'},'TaxCredits':{emoji:'💰',color:'var(--gold)'}}
+},
+
+// ─── TEMPLATE FOR NEW JURISDICTIONS ──────────────────────────────────────────
+// ALL 12 CHARLESTON COUNTY JURISDICTIONS ARE NOW LIVE.
+// To add jurisdictions in other counties or states, copy this template.
+/*
+savannah_ga: {
+  name: 'City of Savannah',
+  state: 'GA',
+  permitCenter: 'TBD',
+  permitPhone: 'TBD',
+  loadingSteps: [...],
+  prompt: `## JURISDICTION: CITY OF SAVANNAH, GA\n\n## LAYER 1: HISTORIC DISTRICT BOARD OF REVIEW\n...`,
+  decisions: [...],
+  boardFilters: [...],
+  decisionsSource: {...},
+  feeSources: [...],
+  feeSourceNote: '...',
+  calcBuildingPermit(val){...},
+  calcFees(type, val, sqft, boards){...},
+  layerMeta: {...}
+},
+*/
+
+}; // end JURISDICTIONS
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROMPT ASSEMBLY — This is the key function. It combines the three modules.
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildSystemPrompt(jurisdictionId){
+  const j = JURISDICTIONS[jurisdictionId];
+  if(!j) return ENGINE_PROMPT; // fallback
+  const stateModule = STATE_MODULES[j.state] || '';
+  return ENGINE_PROMPT + '\n\n' + j.prompt + '\n\n' + stateModule;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOADING ANIMATION
+// ═══════════════════════════════════════════════════════════════════════════════
+function showSteps(jurisdictionId){
+  const j = JURISDICTIONS[jurisdictionId];
+  const steps = j ? j.loadingSteps : ["Running pre-flight analysis..."];
+  const c=document.getElementById('loadSteps');c.innerHTML='';
+  steps.forEach((s,i)=>{setTimeout(()=>{const el=document.createElement('div');el.className='load-step';el.innerHTML=`<span class="si">◻</span>${s}`;c.appendChild(el);setTimeout(()=>{el.querySelector('.si').textContent='✓';el.classList.add('done')},2200)},i*2800)});
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RUN ANALYSIS
+// ═══════════════════════════════════════════════════════════════════════════════
+async function runAnalysis(){
+  const desc=document.getElementById('fDesc').value;
+  if(!desc.trim()){alert('Describe the project scope before running.');return}
+
+  const jurisId=document.getElementById('fJuris').value;
+  if(!jurisId){alert('Select a jurisdiction before running.');return}
+
+  const addr=document.getElementById('fAddr').value;
+  const hood=document.getElementById('fHood').value;
+  const type=document.getElementById('fType').value;
+  const cat=document.getElementById('fCat').value;
+  const val=document.getElementById('fVal').value;
+  const phase=document.getElementById('fPhase').value;
+  const mats=getMats();
+  const juris=JURISDICTIONS[jurisId];
+
+  const SYS = buildSystemPrompt(jurisId);
+
+  const contentParts=[];
+  const imageFiles=uploadedFiles.filter(f=>f.type.startsWith('image/'));
+  const pdfFiles=uploadedFiles.filter(f=>f.type==='application/pdf');
+  imageFiles.forEach(f=>{contentParts.push({type:'image',source:{type:'base64',media_type:f.type,data:f.data.split(',')[1]}})});
+  pdfFiles.forEach(f=>{contentParts.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:f.data.split(',')[1]}})});
+
+  contentParts.push({type:'text',text:`PERMIT PRE-FLIGHT REQUEST\n\nJURISDICTION: ${juris.name}\nADDRESS: ${addr||'Not provided'}\nNEIGHBORHOOD: ${hood||'Not specified'}\nPROJECT TYPE: ${type||'Not specified'}\nCATEGORY: ${cat||'Unknown'}\nVALUE: ${val||'Not provided'}\nPHASE: ${phase||'Not specified'}\nMATERIALS: ${mats.length?mats.join(', '):'See description'}\nFILES: ${uploadedFiles.length} (${imageFiles.length} images, ${pdfFiles.length} PDFs)\n\nSCOPE:\n${desc}\n\n---\nRun the full pre-flight for ${juris.name}. Be honest. Cite specific precedents for every flag.`});
+
+  document.getElementById('formSection').style.display='none';
+  document.getElementById('loadBox').classList.add('on');
+  document.getElementById('goBtn').disabled=true;
+  showSteps(jurisId);
+
+  try{
+    const PROXY_URL = 'https://georgest-proxy.only-221.workers.dev/v1/messages';
+    const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:SYS,messages:[{role:'user',content:contentParts}]})});
+    const data=await res.json();
+    const raw=data.content.map(c=>c.text||'').join('');
+    let report;
+    try{report=JSON.parse(raw.replace(/```json|```/g,'').trim())}
+    catch(e){report={confidence:50,confidence_color:'yellow',summary:'Analysis completed — review flags below.',board_recommendation:'See details.',layers:[{layer:'DesignReview',label:'Design Review',flags:[{type:'blue',title:'Analysis Output',body:raw.substring(0,800),precedent:null,fix:null}]},{layer:'Zoning',label:'Zoning Compliance',flags:[]},{layer:'Building',label:'Building & Safety',flags:[]},{layer:'Stormwater',label:'Stormwater / DHEC / Flood',flags:[]},{layer:'TaxCredits',label:'Tax Credits & Incentives',flags:[]}],recommendations:['Try again with more detail.']}}
+    renderReport(report,addr,hood,type,jurisId);
+  }catch(err){
+    console.error(err);
+    document.getElementById('loadBox').classList.remove('on');
+    document.getElementById('formSection').style.display='block';
+    document.getElementById('goBtn').disabled=false;
+    alert('Analysis failed. Check connection and try again.');
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RENDER REPORT — Jurisdiction-aware but structurally identical output
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderReport(r,addr,hood,type,jurisId){
+  document.getElementById('loadBox').classList.remove('on');
+  const box=document.getElementById('rptBox');box.classList.add('on');
+  const sc=r.confidence>=75?'var(--green-flag)':r.confidence>=50?'var(--gold)':'var(--red)';
+  const juris=JURISDICTIONS[jurisId]||{};
+
+  const layerMeta = juris.layerMeta || {
+    'DesignReview': {emoji:'🏛',color:'var(--green-deep)'},
+    'Zoning':       {emoji:'📐',color:'var(--blue)'},
+    'Building':     {emoji:'🔩',color:'var(--text-dark)'},
+    'Stormwater':   {emoji:'🌊',color:'#2D5A8A'},
+    'TaxCredits':   {emoji:'💰',color:'var(--gold)'}
+  };
+
+  let h=`<div class="rpt-hdr"><div><div class="rpt-title">${addr||'Pre-Flight Report'}</div><div class="rpt-sub">${type||'Project'}${hood?' · '+hood:''} · ${juris.name||''} · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div><div class="conf-block"><div class="conf-score" style="color:${sc}">${r.confidence}%</div><div class="conf-label">Overall Approval Confidence</div></div></div>`;
+  h+=`<div class="rpt-summary"><strong>${r.summary}</strong></div>`;
+  h+=`<div class="rpt-board"><strong>Sequencing & Boards:</strong> ${r.board_recommendation}</div>`;
+
+  if(r.layers&&r.layers.length){
+    const layerFlags=r.layers.map(l=>({...l,reds:(l.flags||[]).filter(f=>f.type==='red').length,yellows:(l.flags||[]).filter(f=>f.type==='yellow').length}));
+    const anyFlags=layerFlags.some(l=>(l.flags||[]).length>0);
+
+    if(anyFlags){
+      h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;">`;
+      layerFlags.forEach(l=>{
+        const total=(l.flags||[]).length;
+        const redCount=(l.flags||[]).filter(f=>f.type==='red').length;
+        const badgeColor=redCount>0?'var(--red)':total>0?'var(--gold)':'var(--green-flag)';
+        const meta=layerMeta[l.layer]||{emoji:'📋'};
+        h+=`<div style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--white);border:1px solid var(--border);border-radius:100px;font-size:12px;color:var(--text-secondary);">
+          <span>${meta.emoji}</span>
+          <span style="font-weight:600;color:var(--text-dark)">${l.label}</span>
+          ${total>0?`<span style="background:${badgeColor};color:white;font-size:10px;font-weight:700;border-radius:10px;padding:1px 7px;font-family:var(--mono)">${total}</span>`:'<span style="color:var(--green-flag);font-size:11px;font-weight:600;">✓</span>'}
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+
+    r.layers.forEach(l=>{
+      const flags=l.flags||[];
+      if(!flags.length){
+        h+=`<div class="flag-sec"><div class="flag-sec-title">${layerMeta[l.layer]?.emoji||'📋'} ${l.label} <span style="color:var(--green-flag);font-size:11px;font-weight:600;margin-left:6px;">✓ No issues identified</span></div></div>`;
+        return;
+      }
+      const reds=flags.filter(f=>f.type==='red'),yellows=flags.filter(f=>f.type==='yellow'),greens=flags.filter(f=>f.type==='green'),blues=flags.filter(f=>f.type==='blue');
+      h+=`<div class="flag-sec"><div class="flag-sec-title">${layerMeta[l.layer]?.emoji||'📋'} ${l.label} (${flags.length} flag${flags.length!==1?'s':''})</div>`;
+
+      function rf(flist){
+        flist.forEach(f=>{
+          h+=`<div class="fc ${f.type}"><div class="fc-hdr"><span class="fc-badge">${f.type}</span><span class="fc-title">${f.title}</span></div><div class="fc-body">${f.body}</div>`;
+          if(f.precedent){const dc=f.precedent.decision?.toLowerCase().includes('denied')?'den':f.precedent.decision?.toLowerCase().includes('deferred')?'def':'app';h+=`<div class="prec"><span class="src">PRECEDENT:</span> ${f.precedent.address} (${f.precedent.board}, ${f.precedent.date})<br><span class="dec ${dc}">${f.precedent.decision}</span> · Vote: ${f.precedent.vote}<br>${f.precedent.detail}`;if(f.fix)h+=`<span class="fix">→ ${f.fix}</span>`;h+=`</div>`}
+          else if(f.fix){h+=`<div class="prec"><span class="fix">→ ${f.fix}</span></div>`}
+          h+=`</div>`;
+        });
+      }
+      rf(reds);rf(yellows);rf(greens);rf(blues);
+      h+=`</div>`;
+    });
+  }
+
+  if(r.recommendations?.length){h+=`<div class="recs"><div class="recs-title">What to Do Before You Submit</div>`;r.recommendations.forEach((rec,i)=>{h+=`<div class="rec"><strong>${i+1}.</strong> ${rec}</div>`});h+=`</div>`}
+
+  document.getElementById('rptContent').innerHTML=h;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function reset(){
+  document.getElementById('rptBox').classList.remove('on');
+  document.getElementById('formSection').style.display='block';
+  document.getElementById('goBtn').disabled=false;
+  document.getElementById('rptContent').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECISIONS FEED — Now data-driven from jurisdiction module
+// ═══════════════════════════════════════════════════════════════════════════════
+let activeFilter='all';
+// Default to city_of_charleston for the decisions feed
+let activeJurisForFeed = 'city_of_charleston';
+
+function filterDecisions(filter, btn){
+  activeFilter=filter;
+  document.querySelectorAll('.df-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDecisions();
+}
+
+function renderDecisions(){
+  const juris = JURISDICTIONS[activeJurisForFeed];
+  if(!juris||!juris.decisions) return;
+  const grid=document.getElementById('decisionsGrid');
+  const filtered=juris.decisions.filter(d=>{
+    if(activeFilter==='all') return true;
+    if(activeFilter==='approved'||activeFilter==='denied'||activeFilter==='deferred') return d.outcome===activeFilter;
+    return d.board===activeFilter;
+  });
+  grid.innerHTML=filtered.map(d=>`
+    <div class="decision-card ${d.outcome}">
+      <div class="dc-meta">
+        <span class="dc-board">${d.board}</span>
+        <span class="dc-date">${d.date}</span>
+      </div>
+      <div class="dc-address">${d.address}</div>
+      <div class="dc-desc">${d.desc}</div>
+      <div class="dc-outcome">
+        <span class="dc-badge">${d.outcome}</span>
+        ${d.vote!=='N/A'?`<span class="dc-vote">${d.vote}</span>`:''}
+      </div>
+      <div class="dc-takeaway">💡 ${d.takeaway}</div>
+    </div>
+  `).join('');
+  if(!filtered.length) grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-style:italic;">No decisions match this filter.</div>`;
+}
+
+initForm();
+renderDecisions();
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEE ESTIMATOR — Now data-driven from jurisdiction module
+// ═══════════════════════════════════════════════════════════════════════════════
+function fmt(n){return n===null?null:'$'+n.toLocaleString();}
+
+function calcFees(){
+  const juris = JURISDICTIONS[activeJurisForFeed];
+  if(!juris) return;
+
+  const type=document.getElementById('feeType').value;
+  const val=parseFloat(document.getElementById('feeVal').value)||0;
+  const sqft=parseFloat(document.getElementById('feeSqft').value)||0;
+  const boards={
+    bar: document.querySelector('[data-fee="bar"]')?.classList.contains('sel'),
+    drb: document.querySelector('[data-fee="drb"]')?.classList.contains('sel'),
+    bza: document.querySelector('[data-fee="bza"]')?.classList.contains('sel'),
+    demo: document.querySelector('[data-fee="demo"]')?.classList.contains('sel'),
+    landmark: document.querySelector('[data-fee="landmark"]')?.classList.contains('sel'),
+    bailey: document.querySelector('[data-fee="bailey"]')?.classList.contains('sel'),
+  };
+
+  if(!type && !val && !sqft){
+    document.getElementById('feeLines').innerHTML=`<div style="color:var(--green-pale);font-size:13px;font-style:italic;text-align:center;padding:20px 0;">Enter project details to estimate fees</div>`;
+    document.getElementById('feeNote').style.display='none';
+    return;
+  }
+
+  const result = juris.calcFees(type, val, sqft, boards);
+
+  const linesHtml=result.lines.map(l=>`
+    <div class="fee-line">
+      <span class="fee-line-label">${l.label}${l.note?` <span style="color:var(--gold-light);font-size:9px;font-style:italic;">(${l.note})</span>`:''}</span>
+      <span class="fee-line-amt ${l.amt===0&&l.note?'na':''}">${l.amt===0&&l.note?'No fee':fmt(l.amt)}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('feeLines').innerHTML=`
+    ${linesHtml}
+    <div class="fee-total-line">
+      <span class="fee-total-label">Estimated Total</span>
+      <span class="fee-total-amt">${fmt(result.total)}</span>
+    </div>
+  `;
+
+  const note=document.getElementById('feeNote');
+  note.style.display='block';
+  note.textContent=juris.feeSourceNote;
+}
+
+</script>
+</body>
+</html>
